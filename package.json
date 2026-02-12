@@ -8,6 +8,7 @@
     "server": "node server/index.js",
     "client": "cd client && npm run dev",
     "build": "cd client && npm install && npm run build",
+    "start": "node server/index.js",
     "test:openai": "node scripts/test-openai.js"
   },
   "dependencies": {

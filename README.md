@@ -105,11 +105,20 @@ To test from the command line: `npm run test:openai` (requires `OPENAI_API_KEY` 
 
 Validation rules: phone (digits, +66), maps link (maps.app.goo.gl or google.com/maps), money (>= 0), date (parseable).
 
+## Railway Deployment (Full Stack)
+
+For full deployment with backend, PDF generation, and data persistence:
+
+1. **Supabase required** – Railway has ephemeral storage. Set `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+2. **Deploy** – Push to GitHub and connect the repo in [Railway](https://railway.app). Railway uses the `Dockerfile` for Puppeteer support.
+3. **Variables** – Add Supabase URL, service role key, and optionally `OPENAI_API_KEY`.
+4. See **[RAILWAY_DEPLOY.md](RAILWAY_DEPLOY.md)** for step-by-step instructions.
+
 ## Vercel Deployment (Frontend Only)
 
 1. **Push to git** – Vercel will build from the repo root using `vercel.json`.
 2. **Root Directory** – Leave empty (do not set to `client`). The build runs from repo root.
-3. **Note:** Only the frontend deploys. The backend (Express) and data (Excel) do not run on Vercel. API calls will fail. For full deployment with data persistence, use [Railway](https://railway.app) or [Render](https://render.com).
+3. **Note:** Only the frontend deploys. The backend (Express) and data (Excel) do not run on Vercel. API calls will fail. For full deployment with data persistence, use [Railway](https://railway.app).
 
 If you still get 404:
 - Check **Deployments** → click the latest → **Building** logs. Ensure the build succeeds.
