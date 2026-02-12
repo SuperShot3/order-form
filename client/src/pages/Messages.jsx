@@ -30,7 +30,7 @@ function templateConfirmation(order) {
 ${order.maps_link ? `Map link: ${order.maps_link}` : ''}
 👤 Recipient: ${order.receiver_name || ''}
 ☎️ Contact: ${order.phone || ''} (${order.preferred_contact || ''})
-💰 Items total: ${order.items_total ?? ''} THB
+💰 Order Total Amount: ${order.items_total ?? ''} THB
 
 Please confirm if everything is correct.`;
 }
@@ -45,7 +45,7 @@ Order ID: ${order.order_id || ''}
 📍 Delivery to: ${order.full_address || ''}
 👤 Recipient: ${order.receiver_name || ''}
 
-Items total: ${order.items_total ?? ''} THB
+Order Total Amount: ${order.items_total ?? ''} THB
 Delivery fee: ${order.delivery_fee ?? '0'} THB
 Total: ${total} THB
 
@@ -123,7 +123,7 @@ export default function Messages() {
         <div className="template-section">
           <h3>2. Payment Request (EN)</h3>
           {!canPaymentRequest && (
-            <p className="warning">Requires items_total and delivery_fee (or 0)</p>
+            <p className="warning">Requires Order Total Amount and delivery fee (or 0)</p>
           )}
           <pre className="template-preview">{payReq}</pre>
           <button onClick={() => copyToClipboard(payReq, 'pay')} disabled={!canPaymentRequest}>

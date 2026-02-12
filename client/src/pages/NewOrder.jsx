@@ -32,6 +32,8 @@ const EMPTY_ORDER = {
   delivery_status: 'PREPARING',
   priority: 'Normal',
   notes: '',
+  action_required: 'No',
+  action_required_note: '',
 };
 
 const AUTO_PARSE_DEBOUNCE_MS = 800;

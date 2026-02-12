@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const ordersService = require('./services/ordersService');
 const excelService = require('./services/excelService');
@@ -10,20 +11,26 @@ const ordersRouter = require('./routes/orders');
 const settingsRouter = require('./routes/settings');
 const parseRouter = require('./routes/parse');
 const reportsRouter = require('./routes/reports');
+const authRouter = require('./routes/auth');
+const { authMiddleware } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: true }));
+app.use(cookieParser());
 app.use(express.json());
 
+app.use('/api/auth', authRouter);
+
+// Health check for Railway (must respond quickly to pass deployment)
+app.get('/health', (req, res) => res.json({ ok: true }));
+
+app.use(authMiddleware);
 app.use('/api/orders', ordersRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/parse', parseRouter);
 app.use('/api/reports', reportsRouter);
-
-// Health check for Railway (must respond quickly to pass deployment)
-app.get('/health', (req, res) => res.json({ ok: true }));
 
 // Serve static frontend in production (Railway, etc.)
 const clientDist = path.join(__dirname, '../client/dist');

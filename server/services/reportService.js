@@ -10,44 +10,86 @@ const EXPORTS_DIR = path.join(__dirname, '../../exports');
 const EXCEL_PATH = path.join(__dirname, '../../data/orders.xlsx');
 const SHEET_NAME = 'Orders';
 
+function escapeHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+async function getLogoDataUrl() {
+  const paths = [
+    path.join(__dirname, '../../public/logo.png'),
+    path.join(__dirname, '../../client/dist/logo.png'),
+    path.join(__dirname, '../../client/public/logo.png'),
+  ];
+  for (const p of paths) {
+    if (fs.existsSync(p)) {
+      const buf = fs.readFileSync(p);
+      return `data:image/png;base64,${buf.toString('base64')}`;
+    }
+  }
+  return null;
+}
+
 async function generateFloristPDF(orderId) {
   const order = await ordersService.getOrderById(orderId);
   if (!order) return null;
 
   ordersService.ensureExportsDir();
 
-  const qrUrl = order.image_link || order.maps_link || order.order_link || 'https://example.com';
-  const qrLabel = order.image_link ? 'Flower image' : (order.maps_link ? 'Map' : 'Order');
-  const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 150, margin: 1 });
+  const mapsUrl = order.maps_link || order.order_link || 'https://maps.google.com';
+  const qrMapsUrl = await QRCode.toDataURL(mapsUrl, { width: 120, margin: 1 });
+  const qrFlowerUrl = order.image_link
+    ? await QRCode.toDataURL(order.image_link, { width: 120, margin: 1 })
+    : null;
 
   const cardText = (order.card_text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
   const notes = (order.notes || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
+  const fullAddress = escapeHtml(order.full_address || '');
+  const logoDataUrl = await getLogoDataUrl();
 
   const html = `
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
   <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 24px; max-width: 400px; }
-    h1 { font-size: 18px; margin-bottom: 16px; }
-    .row { margin: 8px 0; }
-    .label { font-weight: bold; color: #444; }
+    * { font-family: 'Sarabun', sans-serif; }
+    body { padding: 20px; max-width: 420px; font-size: 14px; }
+    .logo { max-height: 48px; margin-bottom: 12px; }
+    h1 { font-size: 18px; margin: 0 0 16px 0; font-weight: 700; }
+    .row { margin: 10px 0; }
+    .label { font-weight: 600; color: #333; }
     .value { margin-top: 2px; }
+    .value a { color: #2563eb; text-decoration: none; }
+    .value a:hover { text-decoration: underline; }
     .card-text, .notes { white-space: pre-wrap; background: #f8f8f8; padding: 12px; border-radius: 4px; margin-top: 4px; }
-    .qr { margin-top: 16px; text-align: center; }
+    .qr-row { display: flex; gap: 16px; margin-top: 16px; justify-content: center; flex-wrap: wrap; }
+    .qr-box { text-align: center; }
     .qr-label { font-size: 12px; color: #666; margin-bottom: 4px; }
-    img { display: block; margin: 0 auto; }
+    .qr-box img { display: block; margin: 0 auto; }
   </style>
 </head>
 <body>
-  <h1>Order: ${(order.order_id || '').replace(/</g, '&lt;')}</h1>
-  <div class="row"><span class="label">Delivery Date:</span><div class="value">${(order.delivery_date || '').replace(/</g, '&lt;')} ${(order.time_window || '').replace(/</g, '&lt;')}</div></div>
-  <div class="row"><span class="label">District:</span><div class="value">${(order.district || '').replace(/</g, '&lt;')}</div></div>
-  <div class="row"><span class="label">Bouquet:</span><div class="value">${(order.bouquet_name || '').replace(/</g, '&lt;')} ${(order.size || '').replace(/</g, '&lt;')}</div></div>
-  <div class="row"><span class="label">Card Text:</span><div class="card-text">${cardText || '(none)'}</div></div>
-  <div class="row"><span class="label">Notes:</span><div class="notes">${notes || '(none)'}</div></div>
-  <div class="qr"><p class="qr-label">Scan for ${qrLabel}</p><img src="${qrDataUrl}" alt="QR" width="150" height="150"/></div>
+  ${logoDataUrl ? `<img src="${logoDataUrl}" alt="Logo" class="logo"/>` : ''}
+  <h1>Order: ${escapeHtml(order.order_id || '')}</h1>
+  <div class="row"><span class="label">วันที่จัดส่ง / Delivery Date:</span><div class="value">${escapeHtml(order.delivery_date || '')}</div></div>
+  <div class="row"><span class="label">ช่วงเวลาจัดส่ง / Delivery Window:</span><div class="value">${escapeHtml(order.time_window || '')}</div></div>
+  <div class="row"><span class="label">แขวง / District:</span><div class="value">${escapeHtml(order.district || '')}</div></div>
+  <div class="row"><span class="label">ที่อยู่จัดส่ง / Delivery Address:</span><div class="value">${fullAddress}${mapsUrl ? `<br/><a href="${escapeHtml(mapsUrl)}" target="_blank">เปิด Google Maps / Open in Google Maps</a>` : ''}</div></div>
+  <div class="row"><span class="label">ช่อดอกไม้ / Bouquet:</span><div class="value">${escapeHtml(order.bouquet_name || '')} ${escapeHtml(order.size || '')}</div></div>
+  <div class="row"><span class="label">ผู้รับ / Recipient:</span><div class="value">${escapeHtml(order.receiver_name || '')}</div></div>
+  <div class="row"><span class="label">ข้อความการ์ด / Card Text:</span><div class="card-text">${cardText || '(none)'}</div></div>
+  <div class="row"><span class="label">ผู้สั่ง / Customer:</span><div class="value">${escapeHtml(order.customer_name || '')}</div></div>
+  <div class="row"><span class="label">เบอร์โทร / Phone:</span><div class="value">${escapeHtml(order.phone || '')}</div></div>
+  <div class="row"><span class="label">ช่องทางติดต่อ / Preferred Contact:</span><div class="value">${escapeHtml(order.preferred_contact || '')}</div></div>
+  <div class="row"><span class="label">ยืนยันการชำระเงิน / Payment Confirmed:</span><div class="value">${escapeHtml(order.payment_confirmed_time || '-')}</div></div>
+  <div class="row"><span class="label">Action Required:</span><div class="value">${escapeHtml(order.action_required || 'No')}${order.action_required_note ? ` — ${escapeHtml(order.action_required_note)}` : ''}</div></div>
+  <div class="row"><span class="label">หมายเหตุ / Notes:</span><div class="notes">${notes || '(none)'}</div></div>
+  <div class="qr-row">
+    <div class="qr-box"><p class="qr-label">QR ไปยัง Google Maps</p><img src="${qrMapsUrl}" alt="QR Map" width="120" height="120"/></div>
+    ${qrFlowerUrl ? `<div class="qr-box"><p class="qr-label">QR รูปดอกไม้</p><img src="${qrFlowerUrl}" alt="QR Flower" width="120" height="120"/></div>` : ''}
+  </div>
 </body>
 </html>
 `;
@@ -63,6 +105,7 @@ async function generateFloristPDF(orderId) {
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.evaluate(() => document.fonts.ready);
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -135,11 +178,11 @@ async function generateFinanceExcel(startDate, endDate) {
     'Order ID',
     'Delivery Date',
     'Customer Name',
-    'Items Total',
+    'Order Total Amount',
     'Delivery Fee',
     'Flowers Cost',
     'Total Profit',
-    'Payment Status',
+    'Customer Payment Status',
   ];
 
   sheet.addRow(financeCols);

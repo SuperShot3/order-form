@@ -31,12 +31,18 @@ CREATE TABLE IF NOT EXISTS orders (
   delivery_status TEXT,
   priority TEXT,
   notes TEXT,
+  action_required TEXT DEFAULT 'No',
+  action_required_note TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Add image_link if missing (for existing installations)
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS image_link TEXT;
+
+-- Add action_required fields (for existing installations)
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS action_required TEXT DEFAULT 'No';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS action_required_note TEXT;
 
 -- Index for order_id lookups
 CREATE INDEX IF NOT EXISTS idx_orders_order_id ON orders(order_id);

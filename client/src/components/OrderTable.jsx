@@ -5,12 +5,13 @@ export default function OrderTable({ orders }) {
 
   const cols = [
     { key: 'order_id', label: 'Order ID' },
-    { key: 'delivery_date', label: 'Date' },
+    { key: 'delivery_date', label: 'Delivery Date' },
     { key: 'bouquet_name', label: 'Bouquet' },
     { key: 'receiver_name', label: 'Recipient' },
     { key: 'district', label: 'District' },
-    { key: 'payment_status', label: 'Payment' },
+    { key: 'payment_status', label: 'Customer Payment' },
     { key: 'delivery_status', label: 'Status' },
+    { key: 'action_required', label: 'Action Required' },
   ];
 
   return (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ValidationField from './ValidationField';
-import { PREFERRED_CONTACT, PAYMENT_STATUS, DELIVERY_STATUS, PRIORITY, FLORIST_PAYMENT_STATUS } from '../utils/enums';
+import { PREFERRED_CONTACT, PAYMENT_STATUS, DELIVERY_STATUS, PRIORITY, FLORIST_PAYMENT_STATUS, ACTION_REQUIRED } from '../utils/enums';
 import { getSettings } from '../api/settings';
 
 const FIELD_LABELS = {
@@ -19,11 +19,11 @@ const FIELD_LABELS = {
   size: 'Size',
   image_link: 'Image Link',
   card_text: 'Card Text',
-  items_total: 'Items Total',
+  items_total: 'Order Total Amount',
   delivery_fee: 'Delivery Fee',
   flowers_cost: 'Flowers Cost',
   total_profit: 'Total Profit',
-  payment_status: 'Payment Status',
+  payment_status: 'Customer Payment Status',
   payment_confirmed_time: 'Payment Confirmed Time',
   florist_status: 'Florist Payment Status',
   florist_payment: 'Florist Payment',
@@ -31,6 +31,8 @@ const FIELD_LABELS = {
   delivery_status: 'Delivery Status',
   priority: 'Priority',
   notes: 'Notes',
+  action_required: 'Action Required',
+  action_required_note: 'Action Required Note',
 };
 
 const DEFAULT_REQUIRED = [
@@ -349,6 +351,28 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
               <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>
+        </ValidationField>
+
+        <ValidationField label={FIELD_LABELS.action_required} value={data.action_required} required={false} fieldKey="action_required">
+          <select
+            value={data.action_required || 'No'}
+            onChange={(e) => update('action_required', e.target.value)}
+            disabled={readOnly}
+          >
+            {ACTION_REQUIRED.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        </ValidationField>
+
+        <ValidationField label={FIELD_LABELS.action_required_note} value={data.action_required_note} required={false} fieldKey="action_required_note" className="span-full">
+          <input
+            type="text"
+            value={data.action_required_note || ''}
+            onChange={(e) => update('action_required_note', e.target.value)}
+            readOnly={readOnly}
+            placeholder="Details when action is required"
+          />
         </ValidationField>
 
         <ValidationField label={FIELD_LABELS.notes} value={data.notes} required={false} fieldKey="notes" className="span-full">

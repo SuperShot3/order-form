@@ -22,11 +22,11 @@ const COLUMN_HEADERS = [
   'Bouquet Name',
   'Size',
   'Card Text (LONG)',
-  'Items Total F+C',
+  'Order Total Amount',
   'Delivery Fee',
   'Flowers Cost C/C',
   'Total Proft',
-  'Payment Status',
+  'Customer Payment Status',
   'Customer Payment Confirmed Time',
   'Florist Payment Status',
   'Florist Payment',
@@ -34,6 +34,8 @@ const COLUMN_HEADERS = [
   'Delivery Status',
   'Priority',
   'Notes',
+  'Action Required',
+  'Action Required Note',
   'Image Link',
 ];
 
@@ -65,7 +67,9 @@ const KEY_TO_COL = {
   delivery_status: 23,
   priority: 24,
   notes: 25,
-  image_link: 26,
+  action_required: 26,
+  action_required_note: 27,
+  image_link: 28,
 };
 
 function ensureDataDir() {
