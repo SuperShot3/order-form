@@ -29,7 +29,7 @@ export function getFieldValidationState(value, required, fieldKey) {
   if (empty && !required) return 'optional';
   if (fieldKey === 'phone') return validatePhone(value) ? 'valid' : 'invalid';
   if (fieldKey === 'maps_link') return validateMapsLink(value) ? 'valid' : 'invalid';
-  if (['items_total', 'delivery_fee', 'flowers_cost', 'florist_payment'].includes(fieldKey)) {
+  if (['items_total', 'delivery_fee', 'florist_payment'].includes(fieldKey)) {
     return validateMoney(value) ? 'valid' : 'invalid';
   }
   if (fieldKey === 'delivery_date') return validateDate(value) ? 'valid' : 'invalid';

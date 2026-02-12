@@ -39,14 +39,9 @@ function orderToDb(order) {
 }
 
 function calculateTotalProfit(order) {
-  const sellFor = parseFloat(order.items_total);
-  const costFlowers = parseFloat(order.flowers_cost);
-  const delivery = parseFloat(order.delivery_fee);
-
-  if (isNaN(sellFor) || isNaN(costFlowers)) return null;
-  const d = isNaN(delivery) ? 0 : delivery;
-  const totalReceived = sellFor + d;
-  return totalReceived - costFlowers;
+  const totalReceived = parseFloat(order.items_total);
+  if (isNaN(totalReceived)) return null;
+  return totalReceived;
 }
 
 async function getOrders(options = {}) {
