@@ -30,7 +30,9 @@ function templateConfirmation(order) {
 ${order.maps_link ? `Map link: ${order.maps_link}` : ''}
 👤 Recipient: ${order.receiver_name || ''}
 ☎️ Contact: ${order.phone || ''} (${order.preferred_contact || ''})
-💰 Order Total Amount: ${order.items_total ?? ''} THB
+💰 Sell Flowers For: ${order.items_total ?? ''} THB
+🚚 Delivery fee: ${order.delivery_fee ?? '0'} THB
+💵 Total Amount Received: ${(parseFloat(order.items_total) || 0) + (parseFloat(order.delivery_fee) || 0)} THB
 
 Please confirm if everything is correct.`;
 }
@@ -45,9 +47,9 @@ Order ID: ${order.order_id || ''}
 📍 Delivery to: ${order.full_address || ''}
 👤 Recipient: ${order.receiver_name || ''}
 
-Order Total Amount: ${order.items_total ?? ''} THB
+Sell Flowers For: ${order.items_total ?? ''} THB
 Delivery fee: ${order.delivery_fee ?? '0'} THB
-Total: ${total} THB
+Total Amount Received: ${total} THB
 
 Please confirm payment once completed.`;
 }
@@ -123,7 +125,7 @@ export default function Messages() {
         <div className="template-section">
           <h3>2. Payment Request (EN)</h3>
           {!canPaymentRequest && (
-            <p className="warning">Requires Order Total Amount and delivery fee (or 0)</p>
+            <p className="warning">Requires Sell Flowers For and delivery fee (or 0)</p>
           )}
           <pre className="template-preview">{payReq}</pre>
           <button onClick={() => copyToClipboard(payReq, 'pay')} disabled={!canPaymentRequest}>

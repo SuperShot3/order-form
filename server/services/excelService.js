@@ -22,9 +22,9 @@ const COLUMN_HEADERS = [
   'Bouquet Name',
   'Size',
   'Card Text (LONG)',
-  'Order Total Amount',
+  'Sell Flowers For',
   'Delivery Fee',
-  'Flowers Cost C/C',
+  'Cost Flowers',
   'Total Proft',
   'Customer Payment Status',
   'Customer Payment Confirmed Time',
@@ -135,17 +135,14 @@ function orderToRow(order) {
 }
 
 function calculateTotalProfit(order) {
-  const items = parseFloat(order.items_total);
-  const flowers = parseFloat(order.flowers_cost);
-  const delivery = order.delivery_fee === '' || order.delivery_fee === undefined || order.delivery_fee === null
-    ? null
-    : parseFloat(order.delivery_fee);
+  const sellFor = parseFloat(order.items_total);
+  const costFlowers = parseFloat(order.flowers_cost);
+  const delivery = parseFloat(order.delivery_fee);
 
-  if (isNaN(items) || isNaN(flowers)) return null;
-  if (delivery === null && order.delivery_fee !== '0' && order.delivery_fee !== 0) return null;
-
+  if (isNaN(sellFor) || isNaN(costFlowers)) return null;
   const d = isNaN(delivery) ? 0 : delivery;
-  return items - flowers - d;
+  const totalReceived = sellFor + d;
+  return totalReceived - costFlowers;
 }
 
 async function getOrders(options = {}) {

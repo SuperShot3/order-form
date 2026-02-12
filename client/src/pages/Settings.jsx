@@ -30,7 +30,7 @@ const FIELD_LABELS = {
   receiver_name: 'Recipient Name',
   phone: 'Phone',
   preferred_contact: 'Preferred Contact',
-  items_total: 'Order Total Amount',
+  items_total: 'Sell Flowers For',
   delivery_fee: 'Delivery Fee',
 };
 

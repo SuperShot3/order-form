@@ -178,9 +178,9 @@ async function generateFinanceExcel(startDate, endDate) {
     'Order ID',
     'Delivery Date',
     'Customer Name',
-    'Order Total Amount',
+    'Sell Flowers For',
     'Delivery Fee',
-    'Flowers Cost',
+    'Cost Flowers',
     'Total Profit',
     'Customer Payment Status',
   ];

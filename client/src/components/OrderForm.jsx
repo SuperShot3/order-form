@@ -19,9 +19,10 @@ const FIELD_LABELS = {
   size: 'Size',
   image_link: 'Image Link',
   card_text: 'Card Text',
-  items_total: 'Order Total Amount',
+  items_total: 'Sell Flowers For',
   delivery_fee: 'Delivery Fee',
-  flowers_cost: 'Flowers Cost',
+  flowers_cost: 'Cost Flowers',
+  total_amount_received: 'Total Amount Received',
   total_profit: 'Total Profit',
   payment_status: 'Customer Payment Status',
   payment_confirmed_time: 'Payment Confirmed Time',
@@ -68,9 +69,22 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
   const timeWindowOptions = settings?.time_window_options || [];
   const sizeOptions = settings?.size_options || ['S', 'M', 'L', 'XL'];
 
+  const sellFor = parseFloat(data.items_total) || 0;
+  const delivery = parseFloat(data.delivery_fee) || 0;
+  const costFlowers = parseFloat(data.flowers_cost) || 0;
+  const totalReceived = sellFor + delivery;
+  const calculatedProfit = totalReceived - costFlowers;
+
   const update = (key, value) => {
     const next = { ...data, [key]: value };
     if (key === 'order_id') next.order_link = getOrderLink(value);
+    if (['items_total', 'delivery_fee', 'flowers_cost'].includes(key)) {
+      const sf = parseFloat(key === 'items_total' ? value : next.items_total) || 0;
+      const d = parseFloat(key === 'delivery_fee' ? value : next.delivery_fee) || 0;
+      const cf = parseFloat(key === 'flowers_cost' ? value : next.flowers_cost) || 0;
+      const profit = sf + d - cf;
+      next.total_profit = isNaN(profit) ? '' : profit;
+    }
     setData(next);
     onChange?.(next);
   };
@@ -246,17 +260,6 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
           />
         </ValidationField>
 
-        <ValidationField label={FIELD_LABELS.delivery_fee} value={data.delivery_fee} required={false} fieldKey="delivery_fee">
-          <input
-            type="number"
-            min={0}
-            step={0.01}
-            value={data.delivery_fee ?? ''}
-            onChange={(e) => update('delivery_fee', e.target.value === '' ? '' : parseFloat(e.target.value))}
-            readOnly={readOnly}
-          />
-        </ValidationField>
-
         <ValidationField label={FIELD_LABELS.flowers_cost} value={data.flowers_cost} required={false} fieldKey="flowers_cost">
           <input
             type="number"
@@ -268,12 +271,32 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
           />
         </ValidationField>
 
-        <ValidationField label={FIELD_LABELS.total_profit} value={data.total_profit} required={false} fieldKey="total_profit">
+        <ValidationField label={FIELD_LABELS.delivery_fee} value={data.delivery_fee} required={false} fieldKey="delivery_fee">
+          <input
+            type="number"
+            min={0}
+            step={0.01}
+            value={data.delivery_fee ?? ''}
+            onChange={(e) => update('delivery_fee', e.target.value === '' ? '' : parseFloat(e.target.value))}
+            readOnly={readOnly}
+          />
+        </ValidationField>
+
+        <ValidationField label={FIELD_LABELS.total_amount_received} value={totalReceived} required={false} fieldKey="total_amount_received">
           <input
             type="text"
-            value={data.total_profit ?? ''}
+            value={totalReceived || ''}
             readOnly
-            placeholder="Auto-calculated"
+            placeholder="Sell Flowers For + Delivery Fee"
+          />
+        </ValidationField>
+
+        <ValidationField label={FIELD_LABELS.total_profit} value={data.total_profit ?? calculatedProfit} required={false} fieldKey="total_profit">
+          <input
+            type="text"
+            value={data.total_profit ?? calculatedProfit}
+            readOnly
+            placeholder="Total Amount Received - Cost Flowers"
           />
         </ValidationField>
 

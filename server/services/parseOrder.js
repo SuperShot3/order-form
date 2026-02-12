@@ -125,7 +125,7 @@ async function parseWithAI(rawText) {
      order_link, customer_name, receiver_name, phone, preferred_contact (WhatsApp/LINE/Phone),
      delivery_date (YYYY-MM-DD format), time_window, district, full_address, maps_link,
      bouquet_name, size (S/M/L/XL), image_link (URL to flower image), card_text,
-     items_total, delivery_fee, flowers_cost, total_profit (numbers),
+     items_total (Sell Flowers For), delivery_fee, flowers_cost (numbers),
      payment_status (NEW/REQUESTED/PENDING/PAID), notes
   2. "missing_fields" - array of field names not found in the text
 

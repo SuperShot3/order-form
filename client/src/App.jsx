@@ -87,9 +87,8 @@ function App() {
         <NavLink to="/settings">Settings</NavLink>
         {summary && (
           <div className="nav-summary">
-            <span title="Total received from customers">Received: {formatMoney(summary.totalReceived)} THB</span>
+            <span title="Gross revenue (Total Amount Received)">Gross: {formatMoney(summary.gross)} THB</span>
             <span title="Total profit">Profit: {formatMoney(summary.totalProfit)} THB</span>
-            <span title="Gross revenue">Gross: {formatMoney(summary.gross)} THB</span>
             <span title="Total delivery fees">Delivery: {formatMoney(summary.totalDelivery)} THB</span>
           </div>
         )}

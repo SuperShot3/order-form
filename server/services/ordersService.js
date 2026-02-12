@@ -42,19 +42,18 @@ async function getOrdersSummary() {
   let totalDelivery = 0;
 
   orders.forEach((o) => {
-    const items = parseFloat(o.items_total) || 0;
+    const sellFor = parseFloat(o.items_total) || 0;
     const delivery = parseFloat(o.delivery_fee) || 0;
     const profit = parseFloat(o.total_profit) || 0;
 
-    totalReceived += items + delivery;
+    totalReceived += sellFor + delivery;
     totalDelivery += delivery;
     totalProfit += profit;
   });
 
   return {
-    totalReceived,
-    totalProfit,
     gross: totalReceived,
+    totalProfit,
     totalDelivery,
   };
 }
