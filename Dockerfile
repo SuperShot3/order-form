@@ -19,7 +19,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY . .
-RUN cd client && npm ci --omit=dev && npm run build
+RUN cd client && npm ci && npm run build
 
 EXPOSE 3000
 
