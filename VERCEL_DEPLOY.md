@@ -9,33 +9,46 @@ Follow these steps when creating a **new** Vercel project:
 
 ## 2. Project Settings (IMPORTANT)
 
-Before clicking **Deploy**, configure:
+**Two options – pick one:**
+
+### Option A: Root Directory = `client` (Recommended)
 
 | Setting | Value |
 |---------|-------|
-| **Framework Preset** | **Vite** (must be explicit, not "Other") |
-| **Root Directory** | `.` or leave **blank** |
-| **Build Command** | (leave blank – uses `vercel.json`) |
-| **Output Directory** | (leave blank – uses `vercel.json`) |
-| **Install Command** | (leave blank – uses `vercel.json`) |
+| **Framework Preset** | **Vite** |
+| **Root Directory** | `client` |
+| **Build Command** | (leave blank) |
+| **Output Directory** | (leave blank) |
+| **Install Command** | (leave blank) |
 
-**Critical:** Set Framework Preset to **Vite** explicitly. Vercel needs this to detect and serve the app correctly. Do NOT use "Other".
+Uses `client/vercel.json` – Vite project at root, simpler setup.
+
+### Option B: Root Directory = `.` (repo root)
+
+| Setting | Value |
+|---------|-------|
+| **Framework Preset** | **Vite** |
+| **Root Directory** | `.` or blank |
+| **Build Command** | (leave blank – uses root `vercel.json`) |
+| **Output Directory** | (leave blank) |
+| **Install Command** | (leave blank) |
+
+Uses root `vercel.json` – custom build from repo root.
+
+**Critical:** Set Framework Preset to **Vite** explicitly. Do NOT use "Other".
 
 ## 3. Deploy
 
-Click **Deploy**. The build will:
-1. Run `npm install`
-2. Run `npm run build` (builds `client/` and outputs to `client/dist`)
-3. Serve from `client/dist`
+Click **Deploy**. The build will run and output should be served correctly.
 
 ## 4. Verify
 
-- Build should complete successfully (check **Building** logs)
-- Site should load at your Vercel URL
-- Try navigating to `/orders`, `/new` – SPA routing should work
+- Build completes (check **Building** logs)
+- Site loads at your Vercel URL
+- Try `/orders`, `/new` – SPA routing should work
 
 ## 5. If You Still Get 404
 
-1. **Check build logs** – Deployments → latest → Building. Ensure no errors.
-2. **Clear overrides** – Settings → General. Reset Build Command, Output Directory, Install Command to default (empty).
-3. **Root Directory** – Must be `.` or blank. If set to `client`, clear it.
+1. **Check build logs** – Deployments → latest → Building
+2. **Framework must be Vite** – Settings → General
+3. **See** `docs/VERCEL_404_GUIDE.md` for full troubleshooting
