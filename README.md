@@ -84,13 +84,10 @@ Validation rules: phone (digits, +66), maps link (maps.app.goo.gl or google.com/
 
 ## Vercel Deployment (Frontend Only)
 
-To fix 404 on Vercel:
-
-1. **Set Root Directory** in Vercel:
-   - Go to [Vercel Dashboard](https://vercel.com) → Your Project → **Settings** → **General**
-   - Under **Root Directory**, click **Edit** and enter: `client`
-   - Save
-
-2. **Redeploy** – Trigger a new deployment (push to git or Deployments → Redeploy).
-
+1. **Push to git** – Vercel will build from the repo root using `vercel.json`.
+2. **Root Directory** – Leave empty (do not set to `client`). The build runs from repo root.
 3. **Note:** Only the frontend deploys. The backend (Express) and data (Excel) do not run on Vercel. API calls will fail. For full deployment with data persistence, use [Railway](https://railway.app) or [Render](https://render.com).
+
+If you still get 404:
+- Check **Deployments** → click the latest → **Building** logs. Ensure the build succeeds.
+- Clear **Root Directory** in Settings → General if it was set to `client`.
