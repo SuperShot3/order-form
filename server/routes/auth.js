@@ -9,7 +9,7 @@ router.get('/status', (req, res) => {
 
 /** POST /api/auth/logout - Clear auth cookie */
 router.post('/logout', (req, res) => {
-  res.clearCookie('auth_token');
+  res.clearCookie('auth_token', { path: '/' });
   res.json({ ok: true });
 });
 
@@ -27,6 +27,7 @@ router.post('/login', (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
+    path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
   res.json({ token, ok: true });

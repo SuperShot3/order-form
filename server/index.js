@@ -26,7 +26,12 @@ app.use('/api/auth', authRouter);
 // Health check for Railway (must respond quickly to pass deployment)
 app.get('/health', (req, res) => res.json({ ok: true }));
 
-app.use(authMiddleware);
+// Auth only for /api/* (never for /api/auth or static/SPA)
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/auth')) return next();
+  authMiddleware(req, res, next);
+});
+
 app.use('/api/orders', ordersRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/parse', parseRouter);
