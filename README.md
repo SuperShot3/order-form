@@ -81,3 +81,16 @@ npm run client   # Frontend at http://localhost:5173
 - **Gray:** Optional and empty
 
 Validation rules: phone (digits, +66), maps link (maps.app.goo.gl or google.com/maps), money (>= 0), date (parseable).
+
+## Vercel Deployment (Frontend Only)
+
+To fix 404 on Vercel:
+
+1. **Set Root Directory** in Vercel:
+   - Go to [Vercel Dashboard](https://vercel.com) → Your Project → **Settings** → **General**
+   - Under **Root Directory**, click **Edit** and enter: `client`
+   - Save
+
+2. **Redeploy** – Trigger a new deployment (push to git or Deployments → Redeploy).
+
+3. **Note:** Only the frontend deploys. The backend (Express) and data (Excel) do not run on Vercel. API calls will fail. For full deployment with data persistence, use [Railway](https://railway.app) or [Render](https://render.com).
