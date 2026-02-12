@@ -7,7 +7,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "node server/index.js",
     "client": "cd client && npm run dev",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install && npm run build",
+    "test:openai": "node scripts/test-openai.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

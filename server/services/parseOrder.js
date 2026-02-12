@@ -168,20 +168,75 @@ async function parseWithAI(rawText) {
   }
 }
 
+/** Normalize date to YYYY-MM-DD for date input */
+function normalizeDate(val) {
+  if (!val || typeof val !== 'string') return val;
+  const s = val.trim();
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // DD/MM/YYYY or DD-MM-YYYY
+  const ddmmyy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (ddmmyy) {
+    const [, d, m, y] = ddmmyy;
+    const year = y.length === 2 ? `20${y}` : y;
+    return `${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  // YYYY/MM/DD
+  const yyyymmdd = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (yyyymmdd) {
+    const [, y, m, d] = yyyymmdd;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return val;
+}
+
 async function parseOrder(rawText) {
   const settings = await settingsService.getSettings();
   const useAI = settings.use_ai_parsing && process.env.OPENAI_API_KEY;
 
   if (useAI) {
     const aiResult = await parseWithAI(rawText);
-    if (aiResult) return aiResult;
+    if (aiResult) {
+      const extracted = { ...aiResult.extracted };
+      if (extracted.delivery_date) extracted.delivery_date = normalizeDate(extracted.delivery_date);
+      return { extracted, missing_fields: aiResult.missing_fields || [], ai_used: true };
+    }
+    const local = extractLocal(rawText);
+    return {
+      extracted: local.extracted,
+      missing_fields: local.missing || [],
+      ai_used: false,
+      ai_failed: true,
+    };
   }
 
   const local = extractLocal(rawText);
   return {
     extracted: local.extracted,
     missing_fields: local.missing || [],
+    ai_used: false,
   };
 }
 
-module.exports = { parseOrder };
+/** Test OpenAI connection - returns { ok, model?, error? } */
+async function testOpenAIConnection() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return { ok: false, error: 'OPENAI_API_KEY is not set in .env' };
+  }
+  try {
+    const { OpenAI } = require('openai');
+    const client = new OpenAI({ apiKey });
+    const completion = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: 'Say "OK" in one word.' }],
+      max_tokens: 5,
+    });
+    const content = completion.choices[0]?.message?.content;
+    return { ok: !!content, model: 'gpt-4o-mini' };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+module.exports = { parseOrder, testOpenAIConnection };

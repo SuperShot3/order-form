@@ -369,6 +369,23 @@ body {
   margin-bottom: 1rem;
 }
 
+.test-openai-btn {
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.openai-ok {
+  color: #059669;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.openai-err {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
 .checkbox-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

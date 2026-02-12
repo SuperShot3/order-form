@@ -82,9 +82,11 @@ When Supabase is not configured:
    OPENAI_API_KEY=sk-your-key-here
    ```
 
-2. In the app, go to **Settings** and enable **Use AI parsing**.
+2. In the app, go to **Settings** and enable **Use AI parsing**. Use **Test OpenAI connection** to verify the API key works.
 
 3. On the New Order page, paste raw order text and click **Parse**. If AI is enabled, it will use OpenAI to extract fields; otherwise local regex parsing is used.
+
+To test from the command line: `npm run test:openai` (requires `OPENAI_API_KEY` in `.env`).
 
 ## Features
 

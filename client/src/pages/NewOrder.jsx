@@ -44,16 +44,19 @@ export default function NewOrder() {
     if (!rawText.trim()) return;
     setParsing(true);
     try {
-      const { extracted, missing_fields } = await parseOrder(rawText);
+      const { extracted, missing_fields, ai_used, ai_failed } = await parseOrder(rawText);
       setOrder((prev) => {
         const next = { ...prev };
-        Object.keys(extracted).forEach((k) => {
+        Object.keys(extracted || {}).forEach((k) => {
           if (extracted[k] !== undefined && extracted[k] !== null) {
             next[k] = extracted[k];
           }
         });
         return next;
       });
+      if (ai_failed) {
+        alert('AI parsing failed (check OPENAI_API_KEY and connection). Used local extraction.');
+      }
       if (missing_fields?.length) {
         alert(`Missing fields: ${missing_fields.join(', ')}`);
       }

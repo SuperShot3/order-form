@@ -1,7 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-const { parseOrder } = require('../services/parseOrder');
+const { parseOrder, testOpenAIConnection } = require('../services/parseOrder');
+
+/** GET /api/parse/test - Verify OpenAI connection when API key is set */
+router.get('/test', async (req, res) => {
+  try {
+    const result = await testOpenAIConnection();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 router.post('/', async (req, res) => {
   try {

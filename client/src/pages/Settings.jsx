@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getSettings, updateSettings } from '../api/settings';
+import { testOpenAIConnection } from '../api/parse';
 
 const ALL_FIELD_KEYS = [
   'bouquet_name',
@@ -37,6 +38,8 @@ export default function Settings() {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testingOpenAI, setTestingOpenAI] = useState(false);
+  const [openaiTestResult, setOpenaiTestResult] = useState(null);
 
   useEffect(() => {
     getSettings().then(setSettings).catch(() => setLoading(false)).finally(() => setLoading(false));
@@ -122,6 +125,31 @@ export default function Settings() {
             />
             Use AI parsing (requires OPENAI_API_KEY in .env)
           </label>
+          <p className="hint">When enabled, pasted order text is parsed with OpenAI for better extraction.</p>
+          <button
+            type="button"
+            onClick={async () => {
+              setTestingOpenAI(true);
+              setOpenaiTestResult(null);
+              try {
+                const r = await testOpenAIConnection();
+                setOpenaiTestResult(r);
+              } catch (e) {
+                setOpenaiTestResult({ ok: false, error: e.message });
+              } finally {
+                setTestingOpenAI(false);
+              }
+            }}
+            disabled={testingOpenAI}
+            className="test-openai-btn"
+          >
+            {testingOpenAI ? 'Testing...' : 'Test OpenAI connection'}
+          </button>
+          {openaiTestResult && (
+            <p className={openaiTestResult.ok ? 'openai-ok' : 'openai-err'}>
+              {openaiTestResult.ok ? '✓ OpenAI connection OK' : `✗ ${openaiTestResult.error}`}
+            </p>
+          )}
         </section>
 
         <section className="settings-section">
