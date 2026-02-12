@@ -1,42 +1,30 @@
-# Vercel Deployment - FIX 404
+# Vercel Deployment
 
-## Critical: You MUST set Root Directory to `client`
+## 1. Root Directory: Leave BLANK or set to `.`
 
-The app will 404 if Root Directory is wrong. Follow these steps exactly:
+Do **NOT** set Root Directory to `client`. Use the repo root.
 
-## 1. Create/Import Project
+## 2. Configure Settings
 
-- Go to [vercel.com/new](https://vercel.com/new)
-- Import your Git repository
-
-## 2. Before Deploy - Configure Settings
-
-Go to **Settings** (or **Configure Project** before first deploy):
+Go to **Settings** → **General**:
 
 | Setting | Value |
 |---------|-------|
-| **Root Directory** | `client` ← Click Edit, type `client`, SAVE |
+| **Root Directory** | Leave **blank** or `.` |
 | **Framework Preset** | Vite |
-| **Build Command** | (leave blank) |
+| **Build Command** | (leave blank – uses root `vercel.json`) |
 | **Output Directory** | (leave blank) |
 | **Install Command** | (leave blank) |
 
 ## 3. Deploy
 
-Click **Deploy**. The build will:
-- Run from `client/` folder
-- Use `client/vercel.json` (framework: vite, SPA rewrites)
-- Output to `dist/` (Vite default)
-- Serve correctly
+The root `vercel.json` configures:
+- Build from repo root: `cd client && npm install && npm run build`
+- Output: `client/dist`
+- SPA rewrites for routing
 
 ## 4. Verify
 
 - Build succeeds (check logs)
 - Site loads at your URL
 - Try `/orders`, `/new` – no 404
-
-## If Still 404
-
-1. **Confirm Root Directory** – Must be exactly `client` (not `.` or blank)
-2. **Framework** – Must be Vite
-3. **Redeploy** – After changing settings, trigger a new deployment
