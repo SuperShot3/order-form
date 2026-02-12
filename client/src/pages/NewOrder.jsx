@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OrderForm from '../components/OrderForm';
-import { parseOrder } from '../api/parse';
+import { parseOrder, getParseStatus } from '../api/parse';
 import { createOrder } from '../api/orders';
 
 const EMPTY_ORDER = {
@@ -34,14 +34,22 @@ const EMPTY_ORDER = {
   notes: '',
 };
 
+const AUTO_PARSE_DEBOUNCE_MS = 800;
+
 export default function NewOrder() {
   const navigate = useNavigate();
   const [order, setOrder] = useState(EMPTY_ORDER);
   const [rawText, setRawText] = useState('');
   const [parsing, setParsing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState(false);
+  const autoParseTimer = useRef(null);
 
-  const handleParse = async () => {
+  useEffect(() => {
+    getParseStatus().then((r) => setAiAvailable(r.aiAvailable)).catch(() => setAiAvailable(false));
+  }, []);
+
+  const handleParse = useCallback(async () => {
     if (!rawText.trim()) return;
     setParsing(true);
     try {
@@ -66,7 +74,14 @@ export default function NewOrder() {
     } finally {
       setParsing(false);
     }
-  };
+  }, [rawText]);
+
+  useEffect(() => {
+    if (!aiAvailable || !rawText.trim() || rawText.trim().length < 20) return;
+    if (autoParseTimer.current) clearTimeout(autoParseTimer.current);
+    autoParseTimer.current = setTimeout(handleParse, AUTO_PARSE_DEBOUNCE_MS);
+    return () => { if (autoParseTimer.current) clearTimeout(autoParseTimer.current); };
+  }, [rawText, aiAvailable, handleParse]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -84,16 +99,21 @@ export default function NewOrder() {
     <div>
       <h1>New Order</h1>
       <div className="parse-section">
-        <label>Paste raw order text:</label>
+        <label>
+          Paste raw order text
+          {aiAvailable && <span className="parse-ai-badge">AI auto-fill</span>}
+        </label>
         <textarea
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
-          placeholder="Paste order message here..."
+          placeholder={aiAvailable
+            ? 'Paste order message… AI will automatically fill the form below'
+            : 'Paste order message here…'}
           rows={6}
           className="raw-textarea"
         />
         <button onClick={handleParse} disabled={parsing}>
-          {parsing ? 'Parsing...' : 'Parse'}
+          {parsing ? 'Parsing...' : aiAvailable ? 'Parse with AI' : 'Parse'}
         </button>
       </div>
       <hr />

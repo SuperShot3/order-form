@@ -120,42 +120,25 @@ async function parseWithAI(rawText) {
     const { OpenAI } = require('openai');
     const client = new OpenAI({ apiKey });
 
-    const schema = {
-      type: 'object',
-      properties: {
-        extracted: {
-          type: 'object',
-          properties: {
-            order_link: { type: 'string' },
-            customer_name: { type: 'string' },
-            receiver_name: { type: 'string' },
-            phone: { type: 'string' },
-            preferred_contact: { type: 'string', enum: ['WhatsApp', 'LINE', 'Phone'] },
-            delivery_date: { type: 'string' },
-            time_window: { type: 'string' },
-            district: { type: 'string' },
-            full_address: { type: 'string' },
-            maps_link: { type: 'string' },
-            bouquet_name: { type: 'string' },
-            size: { type: 'string' },
-            image_link: { type: 'string' },
-            card_text: { type: 'string' },
-            items_total: { type: 'number' },
-            delivery_fee: { type: 'number' },
-          },
-        },
-        missing_fields: { type: 'array', items: { type: 'string' } },
-      },
-      required: ['extracted', 'missing_fields'],
-    };
+    const prompt = `Extract flower delivery order data from the message. Return JSON only with two keys:
+  1. "extracted" - object with order fields you can find. Use these exact keys:
+     order_link, customer_name, receiver_name, phone, preferred_contact (WhatsApp/LINE/Phone),
+     delivery_date (YYYY-MM-DD format), time_window, district, full_address, maps_link,
+     bouquet_name, size (S/M/L/XL), image_link (URL to flower image), card_text,
+     items_total, delivery_fee, flowers_cost, total_profit (numbers),
+     payment_status (NEW/REQUESTED/PENDING/PAID), notes
+  2. "missing_fields" - array of field names not found in the text
+
+   Districts: Nimman, Santitham, Suthep, Wualai, Jed Yod, Chang Khlan, Doi Saket, Hang Dong, Mae Rim
+   Time windows: Standard (during the day), 08:00 - 10:00, 10:00 - 12:00, etc.
+   Sizes: S, M, L, XL
+
+   Extract everything you can infer. For dates, normalize to YYYY-MM-DD.`;
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        {
-          role: 'system',
-          content: 'Extract flower delivery order data from the message. Return JSON only with keys: extracted (object with order fields) and missing_fields (array of field names that could not be extracted). Use internal keys: order_link, customer_name, receiver_name, phone, preferred_contact, delivery_date, time_window, district, full_address, maps_link, bouquet_name, size, image_link (URL to flower/bouquet image), card_text, items_total, delivery_fee.',
-        },
+        { role: 'system', content: prompt },
         { role: 'user', content: rawText },
       ],
       response_format: { type: 'json_object' },
@@ -225,6 +208,14 @@ async function parseOrder(rawText) {
   };
 }
 
+/** Returns { aiAvailable: boolean } - whether AI parsing can be used */
+async function getParseStatus() {
+  const settings = await settingsService.getSettings();
+  const hasKey = !!process.env.OPENAI_API_KEY;
+  const useAI = settings.use_ai_parsing && hasKey;
+  return { aiAvailable: !!useAI };
+}
+
 /** Test OpenAI connection - returns { ok, model?, error? } */
 async function testOpenAIConnection() {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -246,4 +237,4 @@ async function testOpenAIConnection() {
   }
 }
 
-module.exports = { parseOrder, testOpenAIConnection };
+module.exports = { parseOrder, testOpenAIConnection, getParseStatus };

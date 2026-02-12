@@ -1,5 +1,11 @@
 import { API, safeJson } from './client';
 
+/** Check if AI parsing is available (OPENAI_API_KEY + use_ai_parsing enabled) */
+export async function getParseStatus() {
+  const res = await fetch(`${API}/parse/status`);
+  return safeJson(res);
+}
+
 export async function parseOrder(rawText) {
   const res = await fetch(`${API}/parse`, {
     method: 'POST',

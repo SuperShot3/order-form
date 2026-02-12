@@ -222,6 +222,16 @@ body {
   background: #2f855a;
 }
 
+.parse-ai-badge {
+  margin-left: 8px;
+  font-size: 0.8em;
+  font-weight: 500;
+  color: #38a169;
+  background: #f0fff4;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
 /* Messages page */
 .messages-layout {
   display: flex;
