@@ -16,7 +16,8 @@ async function generateFloristPDF(orderId) {
 
   ordersService.ensureExportsDir();
 
-  const qrUrl = order.maps_link || order.order_link || 'https://example.com';
+  const qrUrl = order.image_link || order.maps_link || order.order_link || 'https://example.com';
+  const qrLabel = order.image_link ? 'Flower image' : (order.maps_link ? 'Map' : 'Order');
   const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 150, margin: 1 });
 
   const cardText = (order.card_text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
@@ -35,6 +36,7 @@ async function generateFloristPDF(orderId) {
     .value { margin-top: 2px; }
     .card-text, .notes { white-space: pre-wrap; background: #f8f8f8; padding: 12px; border-radius: 4px; margin-top: 4px; }
     .qr { margin-top: 16px; text-align: center; }
+    .qr-label { font-size: 12px; color: #666; margin-bottom: 4px; }
     img { display: block; margin: 0 auto; }
   </style>
 </head>
@@ -45,7 +47,7 @@ async function generateFloristPDF(orderId) {
   <div class="row"><span class="label">Bouquet:</span><div class="value">${(order.bouquet_name || '').replace(/</g, '&lt;')} ${(order.size || '').replace(/</g, '&lt;')}</div></div>
   <div class="row"><span class="label">Card Text:</span><div class="card-text">${cardText || '(none)'}</div></div>
   <div class="row"><span class="label">Notes:</span><div class="notes">${notes || '(none)'}</div></div>
-  <div class="qr"><img src="${qrDataUrl}" alt="QR" width="150" height="150"/></div>
+  <div class="qr"><p class="qr-label">Scan for ${qrLabel}</p><img src="${qrDataUrl}" alt="QR" width="150" height="150"/></div>
 </body>
 </html>
 `;

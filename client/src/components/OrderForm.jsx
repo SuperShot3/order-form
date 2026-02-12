@@ -17,6 +17,7 @@ const FIELD_LABELS = {
   maps_link: 'Google Maps Link',
   bouquet_name: 'Bouquet Name',
   size: 'Size',
+  image_link: 'Image Link',
   card_text: 'Card Text',
   items_total: 'Items Total',
   delivery_fee: 'Delivery Fee',
@@ -207,6 +208,16 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
               <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>
+        </ValidationField>
+
+        <ValidationField label={FIELD_LABELS.image_link} value={data.image_link} required={false} fieldKey="image_link" className="span-full">
+          <input
+            type="url"
+            value={data.image_link || ''}
+            onChange={(e) => update('image_link', e.target.value)}
+            readOnly={readOnly}
+            placeholder="https://... (flower image – QR in florist PDF)"
+          />
         </ValidationField>
 
         <ValidationField label={FIELD_LABELS.card_text} value={data.card_text} required={isRequired('card_text')} fieldKey="card_text" className="span-full">

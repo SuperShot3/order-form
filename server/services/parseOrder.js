@@ -3,6 +3,7 @@ const settingsService = require('./settingsService');
 const ALL_KEYS = [
   'bouquet_name',
   'size',
+  'image_link',
   'card_text',
   'delivery_date',
   'time_window',
@@ -59,6 +60,11 @@ function extractLocal(rawText) {
   const mapsMatch = text.match(/(https?:\/\/[^\s]+maps\.app\.goo\.gl[^\s]*)/i)
     || text.match(/(https?:\/\/[^\s]*google\.com\/maps[^\s]*)/i);
   if (mapsMatch) extracted.maps_link = mapsMatch[1].trim();
+
+  // Image link (flower photo)
+  const imageMatch = text.match(/(?:Image|Photo|Flower image|image_link)[:\s]*([^\s]+\.(?:jpg|jpeg|png|gif|webp)|https?:\/\/[^\s]+)/i)
+    || text.match(/(https?:\/\/[^\s]*(?:imgur|i\.ibb|drive\.google|dropbox)[^\s]*)/i);
+  if (imageMatch) extracted.image_link = imageMatch[1].trim();
 
   // Recipient name
   const recipientMatch = text.match(/(?:Recipient name|👤[\s]*Recipient|Recipient)[:\s]*([^\n]+?)(?=\n|$)/i);
@@ -132,6 +138,7 @@ async function parseWithAI(rawText) {
             maps_link: { type: 'string' },
             bouquet_name: { type: 'string' },
             size: { type: 'string' },
+            image_link: { type: 'string' },
             card_text: { type: 'string' },
             items_total: { type: 'number' },
             delivery_fee: { type: 'number' },
@@ -147,7 +154,7 @@ async function parseWithAI(rawText) {
       messages: [
         {
           role: 'system',
-          content: 'Extract flower delivery order data from the message. Return JSON only with keys: extracted (object with order fields) and missing_fields (array of field names that could not be extracted). Use internal keys: order_link, customer_name, receiver_name, phone, preferred_contact, delivery_date, time_window, district, full_address, maps_link, bouquet_name, size, card_text, items_total, delivery_fee.',
+          content: 'Extract flower delivery order data from the message. Return JSON only with keys: extracted (object with order fields) and missing_fields (array of field names that could not be extracted). Use internal keys: order_link, customer_name, receiver_name, phone, preferred_contact, delivery_date, time_window, district, full_address, maps_link, bouquet_name, size, image_link (URL to flower/bouquet image), card_text, items_total, delivery_fee.',
         },
         { role: 'user', content: rawText },
       ],

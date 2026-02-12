@@ -18,6 +18,7 @@ const EMPTY_ORDER = {
   maps_link: '',
   bouquet_name: '',
   size: '',
+  image_link: '',
   card_text: '',
   items_total: '',
   delivery_fee: '',

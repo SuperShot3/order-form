@@ -34,6 +34,7 @@ const COLUMN_HEADERS = [
   'Delivery Status',
   'Priority',
   'Notes',
+  'Image Link',
 ];
 
 // Internal key to Excel column index
@@ -64,6 +65,7 @@ const KEY_TO_COL = {
   delivery_status: 23,
   priority: 24,
   notes: 25,
+  image_link: 26,
 };
 
 function ensureDataDir() {

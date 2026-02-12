@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS orders (
   maps_link TEXT,
   bouquet_name TEXT,
   size TEXT,
+  image_link TEXT,
   card_text TEXT,
   items_total NUMERIC,
   delivery_fee NUMERIC,
@@ -33,6 +34,9 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add image_link if missing (for existing installations)
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS image_link TEXT;
 
 -- Index for order_id lookups
 CREATE INDEX IF NOT EXISTS idx_orders_order_id ON orders(order_id);
