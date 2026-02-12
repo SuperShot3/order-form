@@ -23,7 +23,6 @@ const FIELD_LABELS = {
   delivery_fee: 'Delivery Fee',
   total_amount_received: 'Total Amount Received',
   sell_flowers_for: 'Sell Flowers For',
-  flowers_cost: 'Cost Flowers',
   total_profit: 'Total Profit',
   payment_status: 'Customer Payment Status',
   payment_confirmed_time: 'Payment Confirmed Time',
@@ -273,18 +272,6 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
             onChange={(e) => update('sell_flowers_for', e.target.value === '' ? '' : parseFloat(e.target.value))}
             readOnly={readOnly}
             placeholder="User enters flower amount"
-          />
-        </ValidationField>
-
-        <ValidationField label={FIELD_LABELS.flowers_cost} value={data.flowers_cost} required={false} fieldKey="flowers_cost">
-          <input
-            type="number"
-            min={0}
-            step={0.01}
-            value={data.flowers_cost ?? ''}
-            onChange={(e) => update('flowers_cost', e.target.value === '' ? '' : parseFloat(e.target.value))}
-            readOnly={readOnly}
-            placeholder="Cost of flowers"
           />
         </ValidationField>
 
