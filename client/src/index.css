@@ -1,0 +1,403 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f5f5f5;
+}
+
+.nav {
+  background: #2d3748;
+  padding: 1rem 2rem;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav a {
+  color: #e2e8f0;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.nav a:hover {
+  background: #4a5568;
+}
+
+.nav a.active {
+  background: #4299e1;
+  color: white;
+}
+
+.main {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Form & validation */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-field.span-full {
+  grid-column: 1 / -1;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-field .required {
+  color: #e53e3e;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.form-field.field-invalid input,
+.form-field.field-invalid select,
+.form-field.field-invalid textarea {
+  border-color: #e53e3e;
+  background: #fff5f5;
+}
+
+.form-field.field-valid input,
+.form-field.field-valid select,
+.form-field.field-valid textarea {
+  border-color: #38a169;
+  background: #f0fff4;
+}
+
+.form-field.field-optional input,
+.form-field.field-optional select,
+.form-field.field-optional textarea {
+  background: #f7fafc;
+}
+
+.form-field input[type="checkbox"] {
+  width: auto;
+}
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.order-table th,
+.order-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-table th {
+  background: #2d3748;
+  color: white;
+  font-weight: 600;
+}
+
+.order-table tr.clickable:hover {
+  background: #edf2f7;
+  cursor: pointer;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.filters input[type="text"],
+.filters input[type="date"],
+.filters select {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+}
+
+.filters button {
+  padding: 8px 16px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filters button:hover {
+  background: #3182ce;
+}
+
+/* Form actions */
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.form-actions button {
+  padding: 10px 20px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-actions button:hover:not(:disabled) {
+  background: #3182ce;
+}
+
+.form-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Parse section */
+.parse-section {
+  margin-bottom: 1.5rem;
+}
+
+.parse-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.raw-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-family: inherit;
+  margin-bottom: 8px;
+}
+
+.parse-section button {
+  padding: 8px 16px;
+  background: #38a169;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.parse-section button:hover:not(:disabled) {
+  background: #2f855a;
+}
+
+/* Messages page */
+.messages-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.order-selector {
+  margin-bottom: 0.5rem;
+}
+
+.order-selector label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.order-selector select {
+  padding: 8px 12px;
+  min-width: 300px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+}
+
+.template-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  background: white;
+}
+
+.template-section h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.template-preview {
+  background: #f7fafc;
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  margin: 0 0 0.75rem 0;
+}
+
+.template-section button {
+  padding: 8px 16px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.template-section .warning {
+  color: #c53030;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.template-section input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+/* Reports page */
+.reports-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.report-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: white;
+}
+
+.report-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.report-card p {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.report-card select,
+.report-card input {
+  display: block;
+  margin-bottom: 0.75rem;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  min-width: 200px;
+}
+
+.report-card button {
+  padding: 8px 16px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.report-card button:hover:not(:disabled) {
+  background: #3182ce;
+}
+
+.report-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Settings page */
+.settings-layout {
+  max-width: 600px;
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+}
+
+.settings-section h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.settings-section .hint {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.option-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.option-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.remove-btn {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  background: #c53030;
+}

@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Build output
+dist/
+client/dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Data and exports (local files, regenerated at runtime)
+data/orders.xlsx
+data/settings.json
+exports/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
