@@ -47,7 +47,8 @@ export default function Settings() {
   };
 
   const addOption = (key) => {
-    const prompt = key === 'district_options' ? 'New district' : 'New time window';
+    const prompts = { district_options: 'New district', time_window_options: 'New time window', size_options: 'New size (e.g. S, M, L)' };
+    const prompt = prompts[key] || 'New option';
     const val = window.prompt(prompt);
     if (val?.trim()) {
       setSettings((prev) => ({
@@ -153,6 +154,22 @@ export default function Settings() {
             ))}
           </ul>
           <button onClick={() => addOption('time_window_options')}>Add Time Window</button>
+        </section>
+
+        <section className="settings-section">
+          <h3>Size Options</h3>
+          <p className="hint">Add/remove options for the size dropdown (e.g. S, M, L, XL).</p>
+          <ul className="option-list">
+            {(settings.size_options || []).map((opt, i) => (
+              <li key={i}>
+                {opt}
+                <button type="button" onClick={() => removeOption('size_options', i)} className="remove-btn">
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button onClick={() => addOption('size_options')}>Add Size</button>
         </section>
 
         <div className="form-actions">

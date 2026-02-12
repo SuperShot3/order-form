@@ -38,6 +38,13 @@ const DEFAULT_REQUIRED = [
   'preferred_contact', 'items_total',
 ];
 
+/** For datetime-local input: expects YYYY-MM-DDTHH:mm */
+function toDateTimeLocal(val) {
+  if (!val) return '';
+  const s = String(val).replace(' ', 'T').slice(0, 16);
+  return s;
+}
+
 export default function OrderForm({ order, onChange, readOnly = false }) {
   const [data, setData] = useState(order || {});
   const [settings, setSettings] = useState(null);
@@ -53,6 +60,7 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
   const requiredFields = settings?.required_fields || DEFAULT_REQUIRED;
   const districtOptions = settings?.district_options || [];
   const timeWindowOptions = settings?.time_window_options || [];
+  const sizeOptions = settings?.size_options || ['S', 'M', 'L', 'XL'];
 
   const update = (key, value) => {
     const next = { ...data, [key]: value };
@@ -127,11 +135,10 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
 
         <ValidationField label={FIELD_LABELS.delivery_date} value={data.delivery_date} required={isRequired('delivery_date')} fieldKey="delivery_date">
           <input
-            type="text"
+            type="date"
             value={data.delivery_date || ''}
             onChange={(e) => update('delivery_date', e.target.value)}
             readOnly={readOnly}
-            placeholder="YYYY-MM-DD"
           />
         </ValidationField>
 
@@ -190,13 +197,16 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
         </ValidationField>
 
         <ValidationField label={FIELD_LABELS.size} value={data.size} required={isRequired('size')} fieldKey="size">
-          <input
-            type="text"
+          <select
             value={data.size || ''}
             onChange={(e) => update('size', e.target.value)}
-            readOnly={readOnly}
-            placeholder="S, M, L"
-          />
+            disabled={readOnly}
+          >
+            <option value="">Select</option>
+            {sizeOptions.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
         </ValidationField>
 
         <ValidationField label={FIELD_LABELS.card_text} value={data.card_text} required={isRequired('card_text')} fieldKey="card_text" className="span-full">
@@ -265,9 +275,9 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
 
         <ValidationField label={FIELD_LABELS.payment_confirmed_time} value={data.payment_confirmed_time} required={false} fieldKey="payment_confirmed_time">
           <input
-            type="text"
-            value={data.payment_confirmed_time || ''}
-            onChange={(e) => update('payment_confirmed_time', e.target.value)}
+            type="datetime-local"
+            value={toDateTimeLocal(data.payment_confirmed_time)}
+            onChange={(e) => update('payment_confirmed_time', e.target.value ? e.target.value.replace('T', ' ').slice(0, 16) : '')}
             readOnly={readOnly}
           />
         </ValidationField>

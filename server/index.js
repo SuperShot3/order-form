@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+const ordersService = require('./services/ordersService');
 const excelService = require('./services/excelService');
-const settingsService = require('./services/settingsService');
 
 const ordersRouter = require('./routes/orders');
 const settingsRouter = require('./routes/settings');
@@ -24,8 +24,9 @@ app.use('/api/reports', reportsRouter);
 async function init() {
   excelService.ensureDataDir();
   excelService.ensureExportsDir();
-  await excelService.ensureExcelExists();
-  settingsService.getSettings();
+  if (!ordersService.useSupabase || !ordersService.useSupabase()) {
+    await excelService.ensureExcelExists();
+  }
 }
 
 init().then(() => {

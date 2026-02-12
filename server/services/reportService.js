@@ -4,17 +4,17 @@ const QRCode = require('qrcode');
 const puppeteer = require('puppeteer');
 const ExcelJS = require('exceljs');
 
-const excelService = require('./excelService');
+const ordersService = require('./ordersService');
 
 const EXPORTS_DIR = path.join(__dirname, '../../exports');
 const EXCEL_PATH = path.join(__dirname, '../../data/orders.xlsx');
 const SHEET_NAME = 'Orders';
 
 async function generateFloristPDF(orderId) {
-  const order = await excelService.getOrderById(orderId);
+  const order = await ordersService.getOrderById(orderId);
   if (!order) return null;
 
-  excelService.ensureExportsDir();
+  ordersService.ensureExportsDir();
 
   const qrUrl = order.maps_link || order.order_link || 'https://example.com';
   const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: 150, margin: 1 });
@@ -68,8 +68,8 @@ async function generateFloristPDF(orderId) {
 }
 
 async function generateDriverExcel(date) {
-  await excelService.ensureExcelExists();
-  const orders = await excelService.getOrdersForDate(date);
+  await ordersService.ensureExcelExists();
+  const orders = await ordersService.getOrdersForDate(date);
 
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Driver', {
@@ -114,8 +114,8 @@ async function generateDriverExcel(date) {
 }
 
 async function generateFinanceExcel(startDate, endDate) {
-  await excelService.ensureExcelExists();
-  const orders = await excelService.getOrdersForDateRange(startDate || '1900-01-01', endDate || '9999-12-31');
+  await ordersService.ensureExcelExists();
+  const orders = await ordersService.getOrdersForDateRange(startDate || '1900-01-01', endDate || '9999-12-31');
 
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('Finance', {
@@ -156,8 +156,31 @@ async function generateFinanceExcel(startDate, endDate) {
   return buffer;
 }
 
+async function generateAllOrdersExcel() {
+  const orders = await ordersService.getOrders({});
+  const excelService = require('./excelService');
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Orders', {
+    headerFooter: { firstHeader: 'Orders Export', firstFooter: 'Order Desk' },
+  });
+
+  sheet.addRow(excelService.COLUMN_HEADERS);
+  sheet.getRow(1).font = { bold: true };
+
+  orders.forEach((o) => {
+    sheet.addRow(excelService.orderToRow(o));
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const outPath = path.join(EXPORTS_DIR, `orders_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+  fs.writeFileSync(outPath, Buffer.from(buffer));
+  return buffer;
+}
+
 module.exports = {
   generateFloristPDF,
   generateDriverExcel,
   generateFinanceExcel,
+  generateAllOrdersExcel,
 };

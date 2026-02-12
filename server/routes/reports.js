@@ -40,4 +40,16 @@ router.get('/finance', async (req, res) => {
   }
 });
 
+router.get('/all-orders', async (req, res) => {
+  try {
+    const buffer = await reportService.generateAllOrdersExcel();
+    const date = new Date().toISOString().split('T')[0];
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=orders_export_${date}.xlsx`);
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

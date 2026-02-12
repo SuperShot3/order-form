@@ -14,3 +14,7 @@ export function financeExcelUrl(startDate, endDate) {
   if (endDate) params.set('endDate', endDate);
   return `${API}/reports/finance?${params.toString()}`;
 }
+
+export function allOrdersExcelUrl() {
+  return `${API}/reports/all-orders`;
+}

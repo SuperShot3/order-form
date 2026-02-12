@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getOrders } from '../api/orders';
-import { floristPdfUrl, driverExcelUrl, financeExcelUrl } from '../api/reports';
+import { floristPdfUrl, driverExcelUrl, financeExcelUrl, allOrdersExcelUrl } from '../api/reports';
 
 export default function Reports() {
   const [orders, setOrders] = useState([]);
@@ -27,6 +27,10 @@ export default function Reports() {
 
   const handleFinanceExcel = () => {
     window.open(financeExcelUrl(financeStart, financeEnd), '_blank');
+  };
+
+  const handleAllOrdersExcel = () => {
+    window.open(allOrdersExcelUrl(), '_blank');
   };
 
   return (
@@ -79,6 +83,12 @@ export default function Reports() {
             placeholder="End date"
           />
           <button onClick={handleFinanceExcel}>Download Finance Excel</button>
+        </div>
+
+        <div className="report-card">
+          <h3>Export All Orders</h3>
+          <p>Full Excel export of all orders (backup).</p>
+          <button onClick={handleAllOrdersExcel}>Download All Orders Excel</button>
         </div>
       </div>
     </div>

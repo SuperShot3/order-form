@@ -1,3 +1,4 @@
+const supabaseService = require('../services/supabaseService');
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
@@ -9,7 +10,17 @@ async function generateOrderId() {
   const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
   let max = 0;
 
-  if (fs.existsSync(EXCEL_PATH)) {
+  if (supabaseService.useSupabase && supabaseService.useSupabase()) {
+    const supabase = supabaseService.getClient();
+    const { data } = await supabase.from('orders').select('order_id').ilike('order_id', `${today}-%`);
+    (data || []).forEach((row) => {
+      const parts = String(row.order_id || '').split('-');
+      if (parts[0] === today && parts[1]) {
+        const n = parseInt(parts[1], 10);
+        if (!isNaN(n) && n > max) max = n;
+      }
+    });
+  } else if (fs.existsSync(EXCEL_PATH)) {
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(EXCEL_PATH);
     const sheet = workbook.getWorksheet(SHEET_NAME);

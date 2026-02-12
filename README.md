@@ -1,22 +1,23 @@
 # Order Desk - Flower Delivery Order Management
-TST
-A local-first web app to manage flower delivery orders. Fast order entry, parsing, validation, message templates, and PDF/Excel reports.
+
+A web app to manage flower delivery orders. Fast order entry, parsing, validation, message templates, and PDF/Excel exports.
 
 ## Tech Stack
 
 - **Backend:** Node.js + Express
 - **Frontend:** React + Vite
-- **Storage:** Local Excel only (`./data/orders.xlsx`)
+- **Storage:** Supabase (optional) or local Excel (`./data/orders.xlsx`)
 - **Optional AI:** OpenAI for order parsing when `OPENAI_API_KEY` is set
 
 ## Folder Structure
 
-```   
+```
 orderformlb/
 ├── server/           # Express backend
 ├── client/           # React + Vite frontend
-├── data/             # orders.xlsx, settings.json
+├── data/             # orders.xlsx, settings.json (local fallback)
 ├── exports/          # Generated PDFs and Excel reports
+├── supabase/         # schema.sql for Supabase setup
 └── package.json
 ```
 
@@ -48,10 +49,30 @@ npm run server   # Backend at http://localhost:3001
 npm run client   # Frontend at http://localhost:5173
 ```
 
-## Data Files
+## Supabase (Optional)
 
-- **`./data/orders.xlsx`** - Created automatically on first run. Contains the Orders sheet with all order columns.
-- **`./data/settings.json`** - Created automatically. Stores required fields, dropdown options, and AI parsing toggle.
+When `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set, data is stored in Supabase instead of local Excel.
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Go to **SQL Editor** and run `supabase/schema.sql`
+3. Get your project URL, **service_role** key, and **anon** key from **Settings → API**
+4. Add to `.env`:
+
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+5. Restart the server. New orders and settings will be stored in Supabase.
+6. **Export** – Florist PDF, Driver Excel, and Finance Excel still work and read from Supabase.
+
+## Data Files (Local)
+
+When Supabase is not configured:
+
+- **`./data/orders.xlsx`** – Created on first run. Contains the Orders sheet.
+- **`./data/settings.json`** – Stores required fields, dropdown options (district, time window, size), AI parsing toggle.
 
 ## Enabling AI Parsing
 
@@ -72,7 +93,7 @@ npm run client   # Frontend at http://localhost:5173
 - **Order Details** - Edit order, save, generate messages, generate florist PDF
 - **Messages** - Confirmation, Payment Request, and Missing Info templates with copy-to-clipboard
 - **Reports** - Florist PDF (single order), Driver Excel (daily), Finance Excel (date range)
-- **Settings** - Required fields, district/time window dropdowns, AI parsing toggle
+- **Settings** - Required fields, district/time window/size dropdowns, AI parsing toggle
 
 ## Validation
 

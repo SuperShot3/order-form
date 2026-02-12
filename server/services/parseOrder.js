@@ -169,7 +169,7 @@ async function parseWithAI(rawText) {
 }
 
 async function parseOrder(rawText) {
-  const settings = settingsService.getSettings();
+  const settings = await settingsService.getSettings();
   const useAI = settings.use_ai_parsing && process.env.OPENAI_API_KEY;
 
   if (useAI) {
