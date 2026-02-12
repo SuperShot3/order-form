@@ -23,6 +23,7 @@ const FIELD_LABELS = {
   delivery_fee: 'Delivery Fee',
   total_amount_received: 'Total Amount Received',
   sell_flowers_for: 'Sell Flowers For',
+  flowers_cost: 'Cost Flowers',
   total_profit: 'Total Profit',
   payment_status: 'Customer Payment Status',
   payment_confirmed_time: 'Payment Confirmed Time',
@@ -70,25 +71,12 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
   const sizeOptions = settings?.size_options || ['S', 'M', 'L', 'XL'];
 
   const totalReceived = parseFloat(data.items_total) || 0;
-  const delivery = parseFloat(data.delivery_fee) || 0;
-  const sellFlowersFor = totalReceived - delivery;
+  const sellFlowersFor = parseFloat(data.sell_flowers_for) || 0;
   const calculatedProfit = totalReceived - sellFlowersFor;
 
   const update = (key, value) => {
     const next = { ...data, [key]: value };
     if (key === 'order_id') next.order_link = getOrderLink(value);
-    if (['items_total', 'delivery_fee'].includes(key)) {
-      const total = parseFloat(key === 'items_total' ? value : next.items_total) || 0;
-      const del = parseFloat(key === 'delivery_fee' ? value : next.delivery_fee) || 0;
-      const sellFor = total - del;
-      next.total_profit = isNaN(total) ? '' : total - sellFor;
-    }
-    if (key === 'sell_flowers_for') {
-      const sellFor = parseFloat(value) || 0;
-      const delivery = parseFloat(next.delivery_fee) || 0;
-      next.items_total = sellFor + delivery;
-      next.total_profit = isNaN(next.items_total) ? '' : next.items_total - sellFor;
-    }
     setData(next);
     onChange?.(next);
   };
@@ -276,15 +264,27 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
           />
         </ValidationField>
 
-        <ValidationField label={FIELD_LABELS.sell_flowers_for} value={sellFlowersFor} required={false} fieldKey="sell_flowers_for">
+        <ValidationField label={FIELD_LABELS.sell_flowers_for} value={data.sell_flowers_for} required={false} fieldKey="sell_flowers_for">
           <input
             type="number"
             min={0}
             step={0.01}
-            value={sellFlowersFor || ''}
+            value={data.sell_flowers_for ?? ''}
             onChange={(e) => update('sell_flowers_for', e.target.value === '' ? '' : parseFloat(e.target.value))}
             readOnly={readOnly}
-            placeholder="Flower amount (Total - Delivery Fee)"
+            placeholder="User enters flower amount"
+          />
+        </ValidationField>
+
+        <ValidationField label={FIELD_LABELS.flowers_cost} value={data.flowers_cost} required={false} fieldKey="flowers_cost">
+          <input
+            type="number"
+            min={0}
+            step={0.01}
+            value={data.flowers_cost ?? ''}
+            onChange={(e) => update('flowers_cost', e.target.value === '' ? '' : parseFloat(e.target.value))}
+            readOnly={readOnly}
+            placeholder="Cost of flowers"
           />
         </ValidationField>
 
@@ -293,7 +293,7 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
             type="text"
             value={data.total_profit ?? calculatedProfit}
             readOnly
-            placeholder="Total Amount Received - Sell Flowers For"
+            placeholder="Amount Received - Sell Flowers For"
           />
         </ValidationField>
 

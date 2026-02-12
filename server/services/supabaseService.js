@@ -40,8 +40,9 @@ function orderToDb(order) {
 
 function calculateTotalProfit(order) {
   const totalReceived = parseFloat(order.items_total);
+  const sellFlowersFor = parseFloat(order.sell_flowers_for);
   if (isNaN(totalReceived)) return null;
-  return totalReceived;
+  return isNaN(sellFlowersFor) ? totalReceived : totalReceived - sellFlowersFor;
 }
 
 async function getOrders(options = {}) {

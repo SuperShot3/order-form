@@ -24,6 +24,7 @@ const COLUMN_HEADERS = [
   'Card Text (LONG)',
   'Total Amount Received',
   'Delivery Fee',
+  'Sell Flowers For',
   'Flowers Cost',
   'Total Proft',
   'Customer Payment Status',
@@ -57,19 +58,20 @@ const KEY_TO_COL = {
   card_text: 13,
   items_total: 14,
   delivery_fee: 15,
-  flowers_cost: 16,
-  total_profit: 17,
-  payment_status: 18,
-  payment_confirmed_time: 19,
-  florist_status: 20,
-  florist_payment: 21,
-  driver_assigned: 22,
-  delivery_status: 23,
-  priority: 24,
-  notes: 25,
-  action_required: 26,
-  action_required_note: 27,
-  image_link: 28,
+  sell_flowers_for: 16,
+  flowers_cost: 17,
+  total_profit: 18,
+  payment_status: 19,
+  payment_confirmed_time: 20,
+  florist_status: 21,
+  florist_payment: 22,
+  driver_assigned: 23,
+  delivery_status: 24,
+  priority: 25,
+  notes: 26,
+  action_required: 27,
+  action_required_note: 28,
+  image_link: 29,
 };
 
 function ensureDataDir() {
@@ -136,8 +138,9 @@ function orderToRow(order) {
 
 function calculateTotalProfit(order) {
   const totalReceived = parseFloat(order.items_total);
+  const sellFlowersFor = parseFloat(order.sell_flowers_for);
   if (isNaN(totalReceived)) return null;
-  return totalReceived;
+  return isNaN(sellFlowersFor) ? totalReceived : totalReceived - sellFlowersFor;
 }
 
 async function getOrders(options = {}) {

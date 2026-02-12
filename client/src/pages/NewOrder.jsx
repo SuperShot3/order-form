@@ -22,6 +22,7 @@ const EMPTY_ORDER = {
   card_text: '',
   items_total: '',
   delivery_fee: '',
+  sell_flowers_for: '',
   flowers_cost: '',
   total_profit: '',
   payment_status: 'NEW',

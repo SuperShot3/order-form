@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS orders (
   card_text TEXT,
   items_total NUMERIC,
   delivery_fee NUMERIC,
+  sell_flowers_for NUMERIC,
   flowers_cost NUMERIC,
   total_profit NUMERIC,
   payment_status TEXT,
@@ -39,6 +40,9 @@ CREATE TABLE IF NOT EXISTS orders (
 
 -- Add image_link if missing (for existing installations)
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS image_link TEXT;
+
+-- Add sell_flowers_for (for existing installations)
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS sell_flowers_for NUMERIC;
 
 -- Add action_required fields (for existing installations)
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS action_required TEXT DEFAULT 'No';
