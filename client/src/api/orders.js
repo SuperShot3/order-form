@@ -1,16 +1,14 @@
-const API = '/api';
+import { API, safeJson } from './client';
 
 export async function getOrders(params = {}) {
   const q = new URLSearchParams(params).toString();
   const res = await fetch(`${API}/orders${q ? `?${q}` : ''}`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return safeJson(res);
 }
 
 export async function getOrder(id) {
   const res = await fetch(`${API}/orders/${id}`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return safeJson(res);
 }
 
 export async function createOrder(order) {
@@ -19,8 +17,7 @@ export async function createOrder(order) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(order),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return safeJson(res);
 }
 
 export async function updateOrder(id, order) {
@@ -29,6 +26,5 @@ export async function updateOrder(id, order) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(order),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return safeJson(res);
 }

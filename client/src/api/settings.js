@@ -1,9 +1,8 @@
-const API = '/api';
+import { API, safeJson } from './client';
 
 export async function getSettings() {
   const res = await fetch(`${API}/settings`);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return safeJson(res);
 }
 
 export async function updateSettings(settings) {
@@ -12,6 +11,5 @@ export async function updateSettings(settings) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(settings),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return safeJson(res);
 }

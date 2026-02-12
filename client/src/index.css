@@ -8,6 +8,14 @@ body {
   background: #f5f5f5;
 }
 
+.banner.backend-offline {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
 .nav {
   background: #2d3748;
   padding: 1rem 2rem;

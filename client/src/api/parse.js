@@ -1,4 +1,4 @@
-const API = '/api';
+import { API, safeJson } from './client';
 
 export async function parseOrder(rawText) {
   const res = await fetch(`${API}/parse`, {
@@ -6,6 +6,5 @@ export async function parseOrder(rawText) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ rawText }),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return safeJson(res);
 }
