@@ -28,7 +28,7 @@ const COLUMN_HEADERS = [
   'Total Proft',
   'Payment Status',
   'Customer Payment Confirmed Time',
-  'Florist Status (0/1)',
+  'Florist Payment Status',
   'Florist Payment',
   'Driver Assigned',
   'Delivery Status',

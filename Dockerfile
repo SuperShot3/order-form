@@ -19,5 +19,5 @@ RUN cd client && npm ci --omit=dev && npm run build
 
 EXPOSE 3000
 
-ENV PORT=3000
-CMD ["npm", "start"]
+# Railway sets PORT at runtime; server uses process.env.PORT
+CMD ["node", "server/index.js"]

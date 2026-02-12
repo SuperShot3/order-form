@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ValidationField from './ValidationField';
-import { PREFERRED_CONTACT, PAYMENT_STATUS, DELIVERY_STATUS, PRIORITY } from '../utils/enums';
+import { PREFERRED_CONTACT, PAYMENT_STATUS, DELIVERY_STATUS, PRIORITY, FLORIST_PAYMENT_STATUS } from '../utils/enums';
 import { getSettings } from '../api/settings';
 
 const FIELD_LABELS = {
@@ -25,7 +25,7 @@ const FIELD_LABELS = {
   total_profit: 'Total Profit',
   payment_status: 'Payment Status',
   payment_confirmed_time: 'Payment Confirmed Time',
-  florist_status: 'Florist Status',
+  florist_status: 'Florist Payment Status',
   florist_payment: 'Florist Payment',
   driver_assigned: 'Driver Assigned',
   delivery_status: 'Delivery Status',
@@ -294,12 +294,15 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
         </ValidationField>
 
         <ValidationField label={FIELD_LABELS.florist_status} value={data.florist_status} required={false} fieldKey="florist_status">
-          <input
-            type="checkbox"
-            checked={data.florist_status === 1 || data.florist_status === '1'}
-            onChange={(e) => update('florist_status', e.target.checked ? 1 : 0)}
+          <select
+            value={data.florist_status === 1 || data.florist_status === '1' ? 'Paid' : 'Not Paid'}
+            onChange={(e) => update('florist_status', e.target.value === 'Paid' ? 1 : 0)}
             disabled={readOnly}
-          />
+          >
+            {FLORIST_PAYMENT_STATUS.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
         </ValidationField>
 
         <ValidationField label={FIELD_LABELS.florist_payment} value={data.florist_payment} required={false} fieldKey="florist_payment">

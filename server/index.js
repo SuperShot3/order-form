@@ -22,6 +22,9 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/parse', parseRouter);
 app.use('/api/reports', reportsRouter);
 
+// Health check for Railway (must respond quickly to pass deployment)
+app.get('/health', (req, res) => res.json({ ok: true }));
+
 // Serve static frontend in production (Railway, etc.)
 const clientDist = path.join(__dirname, '../client/dist');
 if (require('fs').existsSync(clientDist)) {
@@ -39,11 +42,10 @@ async function init() {
   }
 }
 
-init().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Order Desk server running at http://localhost:${PORT}`);
+// Start server immediately so Railway health checks pass; init runs in background
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Order Desk server running at http://0.0.0.0:${PORT}`);
+  init().catch((err) => {
+    console.error('Init failed (non-fatal):', err);
   });
-}).catch((err) => {
-  console.error('Init failed:', err);
-  process.exit(1);
 });
