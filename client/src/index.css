@@ -122,6 +122,21 @@ body {
   color: white;
 }
 
+.nav-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+  margin-right: 1rem;
+
+  font-size: 0.8rem;
+  color: #a0aec0;
+}
+
+.nav-summary span {
+  white-space: nowrap;
+}
+
 .nav-logout {
   margin-left: auto;
   padding: 0.5rem 1rem;

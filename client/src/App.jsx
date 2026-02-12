@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
+import { Routes, Route, NavLink, useLocation } from 'react-router-dom';
 import OrdersList from './pages/OrdersList';
 import NewOrder from './pages/NewOrder';
 import OrderDetails from './pages/OrderDetails';
@@ -8,13 +8,20 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import { getSettings } from './api/settings';
+import { getOrdersSummary } from './api/orders';
 import { BACKEND_UNAVAILABLE, setAuthHeaderGetter, setOnUnauthorized } from './api/client';
 import { getAuthStatus, getAuthHeader, getStoredToken, logout } from './api/auth';
+
+function formatMoney(n) {
+  if (n == null || isNaN(n)) return '0';
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
 
 function App() {
   const [noBackend, setNoBackend] = useState(false);
   const [authState, setAuthState] = useState('checking'); // 'checking' | 'login' | 'authenticated'
   const [protectedSite, setProtectedSite] = useState(false);
+  const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     setAuthHeaderGetter(getAuthHeader);
@@ -23,6 +30,15 @@ function App() {
       setAuthState('login');
     });
   }, []);
+
+  const location = useLocation();
+  useEffect(() => {
+    if (authState === 'authenticated') {
+      getOrdersSummary()
+        .then(setSummary)
+        .catch(() => setSummary(null));
+    }
+  }, [authState, location.pathname]);
 
   useEffect(() => {
     getAuthStatus()
@@ -56,7 +72,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <>
       {noBackend && (
         <div className="banner backend-offline">
           {BACKEND_UNAVAILABLE}
@@ -69,6 +85,14 @@ function App() {
         <NavLink to="/messages">Messages</NavLink>
         <NavLink to="/reports">Reports</NavLink>
         <NavLink to="/settings">Settings</NavLink>
+        {summary && (
+          <div className="nav-summary">
+            <span title="Total received from customers">Received: {formatMoney(summary.totalReceived)} THB</span>
+            <span title="Total profit">Profit: {formatMoney(summary.totalProfit)} THB</span>
+            <span title="Gross revenue">Gross: {formatMoney(summary.gross)} THB</span>
+            <span title="Total delivery fees">Delivery: {formatMoney(summary.totalDelivery)} THB</span>
+          </div>
+        )}
         {protectedSite && (
           <button
             type="button"
@@ -89,7 +113,7 @@ function App() {
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
-    </BrowserRouter>
+    </>
   );
 }
 

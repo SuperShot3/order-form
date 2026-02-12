@@ -217,9 +217,11 @@ async function createOrder(orderData) {
   const { generateOrderId } = require('../utils/orderId');
   let order = { ...orderData };
 
+  const { getOrderLink } = require('../utils/orderLink');
   if (!order.order_id) {
     order.order_id = await generateOrderId();
   }
+  order.order_link = getOrderLink(order.order_id);
 
   const profit = calculateTotalProfit(order);
   if (profit !== null) order.total_profit = profit;
@@ -240,7 +242,9 @@ async function updateOrder(id, orderData) {
   const rowNum = await getOrderByRowIndex(id);
   if (!rowNum) return null;
 
+  const { getOrderLink } = require('../utils/orderLink');
   const order = { ...orderData, order_id: id };
+  order.order_link = getOrderLink(id);
   const profit = calculateTotalProfit(order);
   if (profit !== null) order.total_profit = profit;
 

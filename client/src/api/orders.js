@@ -1,5 +1,10 @@
 import { API, apiFetch, safeJson } from './client';
 
+export async function getOrdersSummary() {
+  const res = await apiFetch(`${API}/orders/summary`);
+  return safeJson(res);
+}
+
 export async function getOrders(params = {}) {
   const q = new URLSearchParams(params).toString();
   const res = await apiFetch(`${API}/orders${q ? `?${q}` : ''}`);

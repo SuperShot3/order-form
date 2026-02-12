@@ -35,6 +35,30 @@ function ensureExportsDir() {
   excelService.ensureExportsDir();
 }
 
+async function getOrdersSummary() {
+  const orders = await getOrders({});
+  let totalReceived = 0;
+  let totalProfit = 0;
+  let totalDelivery = 0;
+
+  orders.forEach((o) => {
+    const items = parseFloat(o.items_total) || 0;
+    const delivery = parseFloat(o.delivery_fee) || 0;
+    const profit = parseFloat(o.total_profit) || 0;
+
+    totalReceived += items + delivery;
+    totalDelivery += delivery;
+    totalProfit += profit;
+  });
+
+  return {
+    totalReceived,
+    totalProfit,
+    gross: totalReceived,
+    totalDelivery,
+  };
+}
+
 module.exports = {
   useSupabase,
   getOrders,
@@ -43,5 +67,6 @@ module.exports = {
   updateOrder,
   getOrdersForDate,
   getOrdersForDateRange,
+  getOrdersSummary,
   ensureExportsDir,
 };

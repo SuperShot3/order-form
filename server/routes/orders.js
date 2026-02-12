@@ -3,6 +3,16 @@ const router = express.Router();
 
 const ordersService = require('../services/ordersService');
 
+/** GET /api/orders/summary - Totals for header display */
+router.get('/summary', async (req, res) => {
+  try {
+    const summary = await ordersService.getOrdersSummary();
+    res.json(summary);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { search, payment_status, delivery_status, priority, startDate, endDate } = req.query;

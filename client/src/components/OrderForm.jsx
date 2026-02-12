@@ -35,6 +35,9 @@ const FIELD_LABELS = {
   action_required_note: 'Action Required Note',
 };
 
+const ORDER_LINK_BASE = 'https://www.lannabloom.shop/order/';
+const getOrderLink = (orderId) => (orderId ? `${ORDER_LINK_BASE}${String(orderId).trim()}` : '');
+
 const DEFAULT_REQUIRED = [
   'bouquet_name', 'size', 'card_text', 'delivery_date', 'time_window',
   'district', 'full_address', 'maps_link', 'receiver_name', 'phone',
@@ -67,6 +70,7 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
 
   const update = (key, value) => {
     const next = { ...data, [key]: value };
+    if (key === 'order_id') next.order_link = getOrderLink(value);
     setData(next);
     onChange?.(next);
   };
@@ -89,9 +93,9 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
         <ValidationField label={FIELD_LABELS.order_link} value={data.order_link} required={false} fieldKey="order_link">
           <input
             type="text"
-            value={data.order_link || ''}
-            onChange={(e) => update('order_link', e.target.value)}
-            readOnly={readOnly}
+            value={data.order_link || getOrderLink(data.order_id)}
+            readOnly
+            placeholder="Auto-generated from Order ID"
           />
         </ValidationField>
 
