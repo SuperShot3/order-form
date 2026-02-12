@@ -1,54 +1,42 @@
-# Vercel Deployment Checklist
+# Vercel Deployment - FIX 404
 
-Follow these steps when creating a **new** Vercel project:
+## Critical: You MUST set Root Directory to `client`
 
-## 1. Import Project
+The app will 404 if Root Directory is wrong. Follow these steps exactly:
+
+## 1. Create/Import Project
 
 - Go to [vercel.com/new](https://vercel.com/new)
-- Import your Git repository (GitHub, GitLab, or Bitbucket)
+- Import your Git repository
 
-## 2. Project Settings (IMPORTANT)
+## 2. Before Deploy - Configure Settings
 
-**Two options – pick one:**
-
-### Option A: Root Directory = `client` (Recommended)
+Go to **Settings** (or **Configure Project** before first deploy):
 
 | Setting | Value |
 |---------|-------|
-| **Framework Preset** | **Vite** |
-| **Root Directory** | `client` |
+| **Root Directory** | `client` ← Click Edit, type `client`, SAVE |
+| **Framework Preset** | Vite |
 | **Build Command** | (leave blank) |
 | **Output Directory** | (leave blank) |
 | **Install Command** | (leave blank) |
 
-Uses `client/vercel.json` – Vite project at root, simpler setup.
-
-### Option B: Root Directory = `.` (repo root)
-
-| Setting | Value |
-|---------|-------|
-| **Framework Preset** | **Vite** |
-| **Root Directory** | `.` or blank |
-| **Build Command** | (leave blank – uses root `vercel.json`) |
-| **Output Directory** | (leave blank) |
-| **Install Command** | (leave blank) |
-
-Uses root `vercel.json` – custom build from repo root.
-
-**Critical:** Set Framework Preset to **Vite** explicitly. Do NOT use "Other".
-
 ## 3. Deploy
 
-Click **Deploy**. The build will run and output should be served correctly.
+Click **Deploy**. The build will:
+- Run from `client/` folder
+- Use `client/vercel.json` (framework: vite, SPA rewrites)
+- Output to `dist/` (Vite default)
+- Serve correctly
 
 ## 4. Verify
 
-- Build completes (check **Building** logs)
-- Site loads at your Vercel URL
-- Try `/orders`, `/new` – SPA routing should work
+- Build succeeds (check logs)
+- Site loads at your URL
+- Try `/orders`, `/new` – no 404
 
-## 5. If You Still Get 404
+## If Still 404
 
-1. **Check build logs** – Deployments → latest → Building
-2. **Framework must be Vite** – Settings → General
-3. **See** `docs/VERCEL_404_GUIDE.md` for full troubleshooting
+1. **Confirm Root Directory** – Must be exactly `client` (not `.` or blank)
+2. **Framework** – Must be Vite
+3. **Redeploy** – After changing settings, trigger a new deployment
