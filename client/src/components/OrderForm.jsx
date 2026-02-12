@@ -23,6 +23,7 @@ const FIELD_LABELS = {
   delivery_fee: 'Delivery Fee',
   total_amount_received: 'Total Amount Received',
   sell_flowers_for: 'Sell Flowers For',
+  flowers_cost: 'Flower Cost',
   total_profit: 'Total Profit',
   payment_status: 'Customer Payment Status',
   payment_confirmed_time: 'Payment Confirmed Time',
@@ -69,9 +70,9 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
   const timeWindowOptions = settings?.time_window_options || [];
   const sizeOptions = settings?.size_options || ['S', 'M', 'L', 'XL'];
 
-  const totalReceived = parseFloat(data.items_total) || 0;
   const sellFlowersFor = parseFloat(data.sell_flowers_for) || 0;
-  const calculatedProfit = totalReceived - sellFlowersFor;
+  const flowersCost = parseFloat(data.flowers_cost) || 0;
+  const calculatedProfit = sellFlowersFor - flowersCost;
 
   const update = (key, value) => {
     const next = { ...data, [key]: value };
@@ -275,12 +276,24 @@ export default function OrderForm({ order, onChange, readOnly = false }) {
           />
         </ValidationField>
 
+        <ValidationField label={FIELD_LABELS.flowers_cost} value={data.flowers_cost} required={false} fieldKey="flowers_cost">
+          <input
+            type="number"
+            min={0}
+            step={0.01}
+            value={data.flowers_cost ?? ''}
+            onChange={(e) => update('flowers_cost', e.target.value === '' ? '' : parseFloat(e.target.value))}
+            readOnly={readOnly}
+            placeholder="Flower cost"
+          />
+        </ValidationField>
+
         <ValidationField label={FIELD_LABELS.total_profit} value={data.total_profit ?? calculatedProfit} required={false} fieldKey="total_profit">
           <input
             type="text"
             value={data.total_profit ?? calculatedProfit}
             readOnly
-            placeholder="Amount Received - Sell Flowers For"
+            placeholder="Sell Flowers For - Flower Cost"
           />
         </ValidationField>
 

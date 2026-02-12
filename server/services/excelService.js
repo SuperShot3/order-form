@@ -137,10 +137,11 @@ function orderToRow(order) {
 }
 
 function calculateTotalProfit(order) {
-  const totalReceived = parseFloat(order.items_total);
   const sellFlowersFor = parseFloat(order.sell_flowers_for);
-  if (isNaN(totalReceived)) return null;
-  return isNaN(sellFlowersFor) ? totalReceived : totalReceived - sellFlowersFor;
+  const flowersCost = parseFloat(order.flowers_cost);
+  if (isNaN(sellFlowersFor)) return null;
+  const cost = isNaN(flowersCost) ? 0 : flowersCost;
+  return sellFlowersFor - cost;
 }
 
 async function getOrders(options = {}) {
