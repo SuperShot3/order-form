@@ -1,6 +1,8 @@
 const settingsService = require('./settingsService');
 
 const ALL_KEYS = [
+  'order_id',
+  'order_link',
   'bouquet_name',
   'size',
   'image_link',
@@ -16,7 +18,6 @@ const ALL_KEYS = [
   'items_total',
   'delivery_fee',
   'customer_name',
-  'order_link',
 ];
 
 function extractLocal(rawText) {
@@ -24,12 +25,25 @@ function extractLocal(rawText) {
   const extracted = {};
   const missing = [];
 
-  // Bouquet: "Sweet Mix Bouquet — M size" or Bouquet: Sweet Mix Bouquet — M size
-  const bouquetMatch = text.match(/(?:Bouquet|💐[\s]*Bouquet)[:\s]*["']?([^"'\n—]+)(?:\s*[—\-]\s*)?([SLMXsmlx]+)?\s*(?:size)?/i)
+  // Order ID (e.g. LB-2026-FHI1DGZD)
+  const orderIdMatch = text.match(/(?:Order ID|order_id)[:\s]*([A-Za-z0-9\-]+)/i)
+    || text.match(/\b(LB-\d{4}-[A-Z0-9]+)\b/);
+  if (orderIdMatch) extracted.order_id = (orderIdMatch[1] || '').trim();
+
+  // Order/Details link
+  const orderLinkMatch = text.match(/(?:Details link|order link|Order link)[:\s]*([^\s]+)/i)
+    || text.match(/(https?:\/\/[^\s]*lannabloom\.shop\/order\/[^\s]+)/i);
+  if (orderLinkMatch) extracted.order_link = (orderLinkMatch[1] || '').trim();
+
+  // Bouquet: "Sweet Mix Bouquet — M size" or "🌹Single Rose Bouquet — Red — ฿455" or "Item\n\nSingle Rose Bouquet — Red — ฿455"
+  const bouquetMatch = text.match(/[🌹💐]\s*([^—\n]+?)\s*[—\-]\s*([^—\n]+?)(?:\s*[—\-]\s*)?(?:฿|THB)?\s*(\d+)/i)
+    || text.match(/(?:Item|Bouquet)[:\s]*([^—\n]+?)\s*[—\-]\s*([^—\n]+?)(?:\s*[—\-]\s*)?(?:฿|THB)?\s*(\d+)/i)
+    || text.match(/(?:Bouquet|💐[\s]*Bouquet|Item)[:\s]*["']?([^"'\n—]+)(?:\s*[—\-]\s*)?([SLMXsmlx]+)?\s*(?:size)?/i)
     || text.match(/(?:Bouquet|💐)[:\s]*([^—\n]+?)(?:\s*[—\-]\s*)?([SLMXsmlx]+)?\s*(?:size)?/i);
   if (bouquetMatch) {
     extracted.bouquet_name = (bouquetMatch[1] || '').trim();
     if (bouquetMatch[2]) extracted.size = bouquetMatch[2].trim().toUpperCase();
+    if (bouquetMatch[3] && !extracted.items_total) extracted.items_total = parseFloat(bouquetMatch[3]);
   }
 
   // Card message
@@ -42,17 +56,18 @@ function extractLocal(rawText) {
     || text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
   if (dateMatch) extracted.delivery_date = dateMatch[1].trim();
 
-  // Time window
-  const timeMatch = text.match(/(?:Delivery time|⏰[\s]*Delivery time|time window)[:\s]*([^\n]+?)(?=\n|$)/i)
+  // Time window (Preferred time, Delivery time)
+  const timeMatch = text.match(/(?:Preferred time|Delivery time|⏰[\s]*Delivery time|time window)[:\s]*([^\n]+?)(?=\n|$)/i)
     || text.match(/(?:Standard|during the day)/i)
-    || text.match(/(\d{2}:\d{2}\s*[-–]\s*\d{2}:\d{2})/);
+    || text.match(/(\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2})/);
   if (timeMatch) {
     if (timeMatch[1]) extracted.time_window = timeMatch[1].trim();
     else if (text.match(/Standard|during the day/i)) extracted.time_window = 'Standard (during the day)';
   }
 
-  // Address
-  const addrMatch = text.match(/(?:Delivery address|Full Address|📍[\s]*Delivery address|address)[:\s]*([^\n]+?)(?=\n|Google|$)/i)
+  // Address (including coordinates: "Selected: 18.79497, 98.97051")
+  const addrMatch = text.match(/(?:Delivery address|Full Address|📍[\s]*Delivery address|Address)[:\s]*([^\n]+?)(?=\n|Google|$)/i)
+    || text.match(/(?:Address|Selected)[:\s]*([\d.,\s]+)/i)
     || text.match(/(?:Address|📍)[:\s]*([^\n]+)/i);
   if (addrMatch) extracted.full_address = (addrMatch[1] || '').trim();
 
@@ -61,19 +76,24 @@ function extractLocal(rawText) {
     || text.match(/(https?:\/\/[^\s]*google\.com\/maps[^\s]*)/i);
   if (mapsMatch) extracted.maps_link = mapsMatch[1].trim();
 
-  // Image link (flower photo)
-  const imageMatch = text.match(/(?:Image|Photo|Flower image|image_link)[:\s]*([^\s]+\.(?:jpg|jpeg|png|gif|webp)|https?:\/\/[^\s]+)/i)
+  // Image link (flower photo, Link to flower, catalog URL)
+  const imageMatch = text.match(/(?:Link to flower|Image|Photo|Flower image|image_link)[:\s]*([^\s]+)/i)
+    || text.match(/(https?:\/\/[^\s]*lannabloom\.shop[^\s]*)/i)
     || text.match(/(https?:\/\/[^\s]*(?:imgur|i\.ibb|drive\.google|dropbox)[^\s]*)/i);
   if (imageMatch) extracted.image_link = imageMatch[1].trim();
 
   // Recipient name
-  const recipientMatch = text.match(/(?:Recipient name|👤[\s]*Recipient|Recipient)[:\s]*([^\n]+?)(?=\n|$)/i);
+  const recipientMatch = text.match(/(?:Recipient name|👤[\s]*Recipient|Recipient)[:\s]*([^\n]+?)(?=\n|Recipient phone|$)/i);
   if (recipientMatch) extracted.receiver_name = (recipientMatch[1] || '').trim().replace(/N\/A/i, '').trim() || undefined;
 
-  // Phone
-  const phoneMatch = text.match(/(?:phone|☎️[\s]*Sender phone|Sender phone)[:\s]*([+\d\s\-]+)/i)
+  // Phone (prefer Sender as main contact, then Recipient)
+  const senderPhoneMatch = text.match(/(?:Sender)[:\s]*[^\d]*([+\d\s\-]{9,})/i);
+  const recipientPhoneMatch = text.match(/(?:Recipient phone)[:\s]*([+\d\s\-]+)/i);
+  const phoneMatch = senderPhoneMatch
+    || recipientPhoneMatch
+    || text.match(/(?:phone|Sender phone)[:\s]*([+\d\s\-]+)/i)
     || text.match(/(\+?66[\s\d\-]+|\d{9,10})/);
-  if (phoneMatch) extracted.phone = (phoneMatch[1] || phoneMatch[0] || '').trim();
+  if (phoneMatch) extracted.phone = (phoneMatch[1] || phoneMatch[0] || '').trim().replace(/\s/g, '');
 
   // Sender name
   const senderMatch = text.match(/(?:Sender name|Sender)[:\s]*([^\n]+?)(?=\n|$)/i);
@@ -83,14 +103,19 @@ function extractLocal(rawText) {
   const contactMatch = text.match(/(?:Preferred contact|contact)[:\s]*(WhatsApp|LINE|Phone)/i);
   if (contactMatch) extracted.preferred_contact = contactMatch[1];
 
-  // Items total
-  const itemsMatch = text.match(/(?:Items total|💰[\s]*Items total|items total)[:\s]*(\d+(?:\.\d+)?)/i)
-    || text.match(/(?:total|Total)[:\s]*(\d+(?:\.\d+)?)/i);
+  // Items total (Bouquet: ฿455 or Total: ฿455)
+  const itemsMatch = text.match(/(?:Items total|Bouquet|💰[\s]*Items total)[:\s]*(?:฿|THB)?\s*(\d+(?:\.\d+)?)/i)
+    || text.match(/(?:total|Total)[:\s]*(?:฿|THB)?\s*(\d+(?:\.\d+)?)/i)
+    || text.match(/[—\-]\s*(?:฿|THB)?\s*(\d+)/);
   if (itemsMatch) extracted.items_total = parseFloat(itemsMatch[1]);
 
-  // Delivery fee
-  const feeMatch = text.match(/(?:Delivery fee|🚚[\s]*Delivery fee|delivery fee)[:\s]*(\d+(?:\.\d+)?|0)/i);
-  if (feeMatch) extracted.delivery_fee = parseFloat(feeMatch[1]);
+  // Delivery fee (use 0 if "Calculated by driver")
+  if (/calculated by driver|delivery fee\s*:\s*calculated/i.test(text)) {
+    extracted.delivery_fee = 0;
+  } else {
+    const feeMatch = text.match(/(?:Delivery fee|🚚[\s]*Delivery fee|delivery fee)[:\s]*(\d+(?:\.\d+)?|0)/i);
+    if (feeMatch) extracted.delivery_fee = parseFloat(feeMatch[1]);
+  }
 
   // District - try to find from common list
   const districts = ['Nimman', 'Santitham', 'Suthep', 'Wualai', 'Jed Yod', 'Chang Khlan', 'Doi Saket', 'Hang Dong', 'Mae Rim'];
@@ -120,20 +145,35 @@ async function parseWithAI(rawText) {
     const { OpenAI } = require('openai');
     const client = new OpenAI({ apiKey });
 
-    const prompt = `Extract flower delivery order data from the message. Return JSON only with two keys:
-  1. "extracted" - object with order fields you can find. Use these exact keys:
-     order_link, customer_name, receiver_name, phone, preferred_contact (WhatsApp/LINE/Phone),
-     delivery_date (YYYY-MM-DD format), time_window, district, full_address, maps_link,
-     bouquet_name, size (S/M/L/XL), image_link (URL to flower image), card_text,
-     items_total (Total Amount Received), delivery_fee (numbers),
-     payment_status (NEW/REQUESTED/PENDING/PAID), notes
+    const prompt = `Extract flower delivery order data from the pasted text (often from Lanna Bloom shop). Return JSON only with two keys:
+  1. "extracted" - object with order fields. Use these EXACT keys:
+     order_id - Order ID (e.g. LB-2026-FHI1DGZD)
+     order_link - Full details URL (https://www.lannabloom.shop/order/...)
+     delivery_date - YYYY-MM-DD format (e.g. Feb 20, 2026 → 2026-02-20)
+     time_window - Preferred time (e.g. 11:00-12:00)
+     full_address - Address text or coordinates (e.g. "18.79497, 98.97051" or "Selected: 18.79497, 98.97051")
+     maps_link - Google Maps URL
+     receiver_name - Recipient name
+     phone - Sender/customer phone (main contact number)
+     customer_name - Sender name
+     preferred_contact - Phone, WhatsApp, or LINE
+     bouquet_name - Product name from Item line (e.g. "Single Rose Bouquet")
+     size - Variant like Red, or S/M/L/XL if present
+     image_link - Link to flower / catalog URL
+     items_total - Bouquet total as number only (e.g. 455 from ฿455)
+     delivery_fee - Number; use 0 if "Calculated by driver"
+     card_text, district, notes - if present
   2. "missing_fields" - array of field names not found in the text
 
-   Districts: Nimman, Santitham, Suthep, Wualai, Jed Yod, Chang Khlan, Doi Saket, Hang Dong, Mae Rim
-   Time windows: Standard (during the day), 08:00 - 10:00, 10:00 - 12:00, etc.
-   Sizes: S, M, L, XL
-
-   Extract everything you can infer. For dates, normalize to YYYY-MM-DD.`;
+  Text format hints:
+  - Order ID, Details link, Delivery date, Preferred time, Address, Recipient name, Recipient phone
+  - Item line: "🌹Single Rose Bouquet — Red — ฿455" → bouquet_name, size/variant, items_total
+  - Link to flower, Totals (Bouquet, Delivery fee, Total)
+  - Sender name, Sender phone, Preferred contact
+  - Address may be coordinates: "Selected: 18.79497, 98.97051"
+  - Dates: normalize to YYYY-MM-DD (Feb 20, 2026 → 2026-02-20)
+  - Strip ฿ and currency symbols from numbers
+  - Districts: Nimman, Santitham, Suthep, Wualai, Jed Yod, Chang Khlan, Doi Saket, Hang Dong, Mae Rim`;
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -177,6 +217,14 @@ function normalizeDate(val) {
     const [, y, m, d] = yyyymmdd;
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
   }
+  // Month name: Feb 20, 2026 or February 20, 2026
+  const months = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' };
+  const monthNameMatch = s.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
+  if (monthNameMatch) {
+    const [, mon, d, y] = monthNameMatch;
+    const m = months[mon.toLowerCase().slice(0, 3)];
+    if (m) return `${y}-${m}-${d.padStart(2, '0')}`;
+  }
   return val;
 }
 
@@ -192,8 +240,10 @@ async function parseOrder(rawText) {
       return { extracted, missing_fields: aiResult.missing_fields || [], ai_used: true };
     }
     const local = extractLocal(rawText);
+    const extracted = { ...local.extracted };
+    if (extracted.delivery_date) extracted.delivery_date = normalizeDate(extracted.delivery_date);
     return {
-      extracted: local.extracted,
+      extracted,
       missing_fields: local.missing || [],
       ai_used: false,
       ai_failed: true,
@@ -201,8 +251,10 @@ async function parseOrder(rawText) {
   }
 
   const local = extractLocal(rawText);
+  const extracted = { ...local.extracted };
+  if (extracted.delivery_date) extracted.delivery_date = normalizeDate(extracted.delivery_date);
   return {
-    extracted: local.extracted,
+    extracted,
     missing_fields: local.missing || [],
     ai_used: false,
   };
