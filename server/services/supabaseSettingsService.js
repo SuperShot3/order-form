@@ -15,7 +15,7 @@ const DEFAULT_SETTINGS = {
     'preferred_contact',
     'items_total',
   ],
-  use_ai_parsing: false,
+  use_ai_parsing: true, // AI on by default when OPENAI_API_KEY is set
   district_options: [
     'Nimman',
     'Santitham',

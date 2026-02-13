@@ -117,15 +117,15 @@ export default function Settings() {
 
         <section className="settings-section">
           <h3>AI Parsing</h3>
+          <p className="hint">When OPENAI_API_KEY is set in .env, AI parsing is used automatically. No manual enable needed.</p>
           <label className="checkbox-label">
             <input
               type="checkbox"
-              checked={settings.use_ai_parsing || false}
+              checked={settings.use_ai_parsing !== false}
               onChange={(e) => update('use_ai_parsing', e.target.checked)}
             />
-            Use AI parsing (requires OPENAI_API_KEY in .env)
+            Use AI parsing (uncheck to disable and use local extraction only)
           </label>
-          <p className="hint">When enabled, pasted order text is parsed with OpenAI for better extraction.</p>
           <button
             type="button"
             onClick={async () => {

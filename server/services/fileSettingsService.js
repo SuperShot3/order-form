@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS = {
     'preferred_contact',
     'items_total',
   ],
-  use_ai_parsing: false,
+  use_ai_parsing: true, // AI on by default when OPENAI_API_KEY is set
   district_options: [
     'Nimman',
     'Santitham',
@@ -58,7 +58,15 @@ function getSettings() {
   }
   const raw = fs.readFileSync(SETTINGS_PATH, 'utf8');
   const parsed = JSON.parse(raw);
-  return { ...DEFAULT_SETTINGS, ...parsed };
+  const merged = { ...DEFAULT_SETTINGS, ...parsed };
+  // Migrate: if OPENAI_API_KEY is set and use_ai_parsing was false, enable AI by default
+  if (process.env.OPENAI_API_KEY && merged.use_ai_parsing === false && parsed.use_ai_parsing === false) {
+    merged.use_ai_parsing = true;
+    const toSave = { ...parsed, use_ai_parsing: true };
+    ensureDataDir();
+    fs.writeFileSync(SETTINGS_PATH, JSON.stringify(toSave, null, 2));
+  }
+  return merged;
 }
 
 function updateSettings(updates) {

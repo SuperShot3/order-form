@@ -230,7 +230,8 @@ function normalizeDate(val) {
 
 async function parseOrder(rawText) {
   const settings = await settingsService.getSettings();
-  const useAI = settings.use_ai_parsing && process.env.OPENAI_API_KEY;
+  // Use AI automatically when OPENAI_API_KEY is set (no manual toggle needed)
+  const useAI = !!process.env.OPENAI_API_KEY && (settings.use_ai_parsing !== false);
 
   if (useAI) {
     const aiResult = await parseWithAI(rawText);
@@ -264,7 +265,7 @@ async function parseOrder(rawText) {
 async function getParseStatus() {
   const settings = await settingsService.getSettings();
   const hasKey = !!process.env.OPENAI_API_KEY;
-  const useAI = settings.use_ai_parsing && hasKey;
+  const useAI = hasKey && (settings.use_ai_parsing !== false);
   return { aiAvailable: !!useAI };
 }
 
