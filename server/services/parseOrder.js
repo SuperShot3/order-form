@@ -35,29 +35,32 @@ function extractLocal(rawText) {
     || text.match(/(https?:\/\/[^\s]*lannabloom\.shop\/order\/[^\s]+)/i);
   if (orderLinkMatch) extracted.order_link = (orderLinkMatch[1] || '').trim();
 
-  // Bouquet: "Sweet Mix Bouquet — M size" or "🌹Single Rose Bouquet — Red — ฿455" or "Item\n\nSingle Rose Bouquet — Red — ฿455"
+  // Bouquet: "💐 Item: ❤️ RED ROSES BOUQUET — Size S" or "🌹Single Rose Bouquet — Red — ฿455"
   const bouquetMatch = text.match(/[🌹💐]\s*([^—\n]+?)\s*[—\-]\s*([^—\n]+?)(?:\s*[—\-]\s*)?(?:฿|THB)?\s*(\d+)/i)
     || text.match(/(?:Item|Bouquet)[:\s]*([^—\n]+?)\s*[—\-]\s*([^—\n]+?)(?:\s*[—\-]\s*)?(?:฿|THB)?\s*(\d+)/i)
+    || text.match(/(?:💐\s*Item|Item)[:\s]*[❤️\s]*([^—\n]+?)\s*[—\-]\s*Size\s+([SLMXsmlx]+)/i)
     || text.match(/(?:Bouquet|💐[\s]*Bouquet|Item)[:\s]*["']?([^"'\n—]+)(?:\s*[—\-]\s*)?([SLMXsmlx]+)?\s*(?:size)?/i)
     || text.match(/(?:Bouquet|💐)[:\s]*([^—\n]+?)(?:\s*[—\-]\s*)?([SLMXsmlx]+)?\s*(?:size)?/i);
   if (bouquetMatch) {
-    extracted.bouquet_name = (bouquetMatch[1] || '').trim();
+    extracted.bouquet_name = (bouquetMatch[1] || '').trim().replace(/^[❤️\s]+/, '').trim();
     if (bouquetMatch[2]) extracted.size = bouquetMatch[2].trim().toUpperCase();
-    if (bouquetMatch[3] && !extracted.items_total) extracted.items_total = parseFloat(bouquetMatch[3]);
+    if (bouquetMatch[3] && !extracted.items_total) extracted.items_total = parseFloat(String(bouquetMatch[3]).replace(/,/g, ''));
   }
 
-  // Card message
-  const cardMatch = text.match(/(?:Card message|📝[\s]*Card message|Card message)[:\s]*["']([^"']+)["']/i)
+  // Card message (use backreference so apostrophe in "Je t'aime" doesn't end the match)
+  const cardMatch = text.match(/(?:Card message|📝[\s]*Card message)[:\s]*\n?\s*(["'])([\s\S]+?)\1/i)
+    || text.match(/(?:Card message|📝[\s]*Card message|Card message)[:\s]*["']([^"']+)["']/i)
     || text.match(/(?:Card message|📝)[:\s]*([^\n]+?)(?=\n|$)/i);
-  if (cardMatch) extracted.card_text = (cardMatch[1] || cardMatch[2] || '').trim();
+  if (cardMatch) extracted.card_text = (cardMatch[2] || cardMatch[1] || '').trim();
 
-  // Delivery date
-  const dateMatch = text.match(/(?:Delivery date|📅[\s]*Delivery date|delivery date)[:\s]*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}|[A-Za-z]+\s+\d{1,2},?\s+\d{4})/i)
+  // Delivery date (14 Feb 2026, Feb 20, 2026, DD/MM/YYYY, etc.)
+  const dateMatch = text.match(/(?:Delivery date|📅[\s]*Delivery date|delivery date)[:\s]*(\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}|[A-Za-z]+\s+\d{1,2},?\s+\d{4})/i)
+    || text.match(/(\d{1,2}\s+[A-Za-z]+\s+\d{4})/)
     || text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
   if (dateMatch) extracted.delivery_date = dateMatch[1].trim();
 
-  // Time window (Preferred time, Delivery time)
-  const timeMatch = text.match(/(?:Preferred time|Delivery time|⏰[\s]*Delivery time|time window)[:\s]*([^\n]+?)(?=\n|$)/i)
+  // Time window (Preferred time, Delivery time, ⏰ Time:)
+  const timeMatch = text.match(/(?:Preferred time|Delivery time|⏰[\s]*(?:Delivery )?time|time window)[:\s]*([^\n]+?)(?=\n|$)/i)
     || text.match(/(?:Standard|during the day)/i)
     || text.match(/(\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2})/);
   if (timeMatch) {
@@ -65,11 +68,16 @@ function extractLocal(rawText) {
     else if (text.match(/Standard|during the day/i)) extracted.time_window = 'Standard (during the day)';
   }
 
-  // Address (including coordinates: "Selected: 18.79497, 98.97051")
-  const addrMatch = text.match(/(?:Delivery address|Full Address|📍[\s]*Delivery address|Address)[:\s]*([^\n]+?)(?=\n|Google|$)/i)
-    || text.match(/(?:Address|Selected)[:\s]*([\d.,\s]+)/i)
-    || text.match(/(?:Address|📍)[:\s]*([^\n]+)/i);
-  if (addrMatch) extracted.full_address = (addrMatch[1] || '').trim();
+  // Address (single-line or multi-line until Google Maps)
+  const addrBlock = text.match(/(?:Delivery address|Full Address|📍[\s]*Address|Address)[:\s]*\n([\s\S]+?)(?=\nGoogle Maps|$)/i);
+  if (addrBlock) {
+    extracted.full_address = addrBlock[1].trim().replace(/\n+/g, ', ');
+  } else {
+    const addrMatch = text.match(/(?:Delivery address|Full Address|📍[\s]*Delivery address|Address)[:\s]*([^\n]+?)(?=\n|Google|$)/i)
+      || text.match(/(?:Address|Selected)[:\s]*([\d.,\s]+)/i)
+      || text.match(/(?:Address|📍)[:\s]*([^\n]+)/i);
+    if (addrMatch) extracted.full_address = (addrMatch[1] || '').trim();
+  }
 
   // Google Maps link
   const mapsMatch = text.match(/(https?:\/\/[^\s]+maps\.app\.goo\.gl[^\s]*)/i)
@@ -87,38 +95,44 @@ function extractLocal(rawText) {
   if (recipientMatch) extracted.receiver_name = (recipientMatch[1] || '').trim().replace(/N\/A/i, '').trim() || undefined;
 
   // Phone (prefer Sender as main contact, then Recipient)
-  const senderPhoneMatch = text.match(/(?:Sender)[:\s]*[^\d]*([+\d\s\-]{9,})/i);
-  const recipientPhoneMatch = text.match(/(?:Recipient phone)[:\s]*([+\d\s\-]+)/i);
+  const senderPhoneMatch = text.match(/(?:👤\s*Sender|Sender)[^\n]*\n[^\n]*☎️[\s]*([0-9\s\-]+)/i)
+    || text.match(/(?:Sender)[:\s]*[^\d]*([+\d\s\-]{9,})/i);
+  const recipientPhoneMatch = text.match(/(?:Recipient phone|☎️\s*Phone)[:\s]*([0-9\s\-]+)/i);
   const phoneMatch = senderPhoneMatch
     || recipientPhoneMatch
     || text.match(/(?:phone|Sender phone)[:\s]*([+\d\s\-]+)/i)
-    || text.match(/(\+?66[\s\d\-]+|\d{9,10})/);
+    || text.match(/(\+?66[\s\d\-]+|\d{3}[- ]?\d{3}[- ]?\d{4})/);
   if (phoneMatch) extracted.phone = (phoneMatch[1] || phoneMatch[0] || '').trim().replace(/\s/g, '');
 
   // Sender name
-  const senderMatch = text.match(/(?:Sender name|Sender)[:\s]*([^\n]+?)(?=\n|$)/i);
+  const senderMatch = text.match(/(?:Sender name|👤[\s]*Sender|Sender)[:\s]*([^\n]+?)(?=\n|$)/i);
   if (senderMatch) extracted.customer_name = (senderMatch[1] || '').trim().replace(/N\/A/i, '').trim() || undefined;
 
   // Preferred contact
   const contactMatch = text.match(/(?:Preferred contact|contact)[:\s]*(WhatsApp|LINE|Phone)/i);
   if (contactMatch) extracted.preferred_contact = contactMatch[1];
 
-  // Items total (Bouquet: ฿455 or Total: ฿455)
-  const itemsMatch = text.match(/(?:Items total|Bouquet|💰[\s]*Items total)[:\s]*(?:฿|THB)?\s*(\d+(?:\.\d+)?)/i)
-    || text.match(/(?:total|Total)[:\s]*(?:฿|THB)?\s*(\d+(?:\.\d+)?)/i)
+  // Items total (Bouquet: ฿1,310 or Total: ฿1,710 - handle commas)
+  const parseNum = (s) => parseFloat(String(s || '').replace(/,/g, '')) || undefined;
+  const itemsMatch = text.match(/(?:Items total|Bouquet|💰[\s]*(?:Items total|Price summary))[:\s]*(?:฿|THB)?\s*(\d[\d,.]*)/i)
+    || text.match(/(?:Bouquet)[:\s]*(?:฿|THB)?\s*(\d[\d,.]*)/i)
+    || text.match(/(?:total|Total)[:\s]*(?:฿|THB)?\s*(\d[\d,.]*)/i)
     || text.match(/[—\-]\s*(?:฿|THB)?\s*(\d+)/);
-  if (itemsMatch) extracted.items_total = parseFloat(itemsMatch[1]);
+  if (itemsMatch) extracted.items_total = parseNum(itemsMatch[1]);
 
   // Delivery fee (use 0 if "Calculated by driver")
   if (/calculated by driver|delivery fee\s*:\s*calculated/i.test(text)) {
     extracted.delivery_fee = 0;
   } else {
-    const feeMatch = text.match(/(?:Delivery fee|🚚[\s]*Delivery fee|delivery fee)[:\s]*(\d+(?:\.\d+)?|0)/i);
-    if (feeMatch) extracted.delivery_fee = parseFloat(feeMatch[1]);
+    const feeMatch = text.match(/(?:Delivery fee|🚚[\s]*Delivery fee|delivery fee)[:\s]*(?:฿|THB)?\s*(\d[\d,.]*|0)/i);
+    if (feeMatch) {
+      const v = parseFloat(String(feeMatch[1]).replace(/,/g, ''));
+      extracted.delivery_fee = isNaN(v) ? undefined : v;
+    }
   }
 
   // District - try to find from common list
-  const districts = ['Nimman', 'Santitham', 'Suthep', 'Wualai', 'Jed Yod', 'Chang Khlan', 'Doi Saket', 'Hang Dong', 'Mae Rim'];
+  const districts = ['Nimman', 'Santitham', 'Suthep', 'Wualai', 'Jed Yod', 'Chang Khlan', 'Doi Saket', 'Hang Dong', 'Mae Rim', 'San Kamphaeng'];
   for (const d of districts) {
     if (new RegExp(d, 'i').test(text)) {
       extracted.district = d;
@@ -166,14 +180,14 @@ async function parseWithAI(rawText) {
   2. "missing_fields" - array of field names not found in the text
 
   Text format hints:
-  - Order ID, Details link, Delivery date, Preferred time, Address, Recipient name, Recipient phone
-  - Item line: "🌹Single Rose Bouquet — Red — ฿455" → bouquet_name, size/variant, items_total
-  - Link to flower, Totals (Bouquet, Delivery fee, Total)
-  - Sender name, Sender phone, Preferred contact
-  - Address may be coordinates: "Selected: 18.79497, 98.97051"
-  - Dates: normalize to YYYY-MM-DD (Feb 20, 2026 → 2026-02-20)
-  - Strip ฿ and currency symbols from numbers
-  - Districts: Nimman, Santitham, Suthep, Wualai, Jed Yod, Chang Khlan, Doi Saket, Hang Dong, Mae Rim`;
+  - Order ID, Details link, Delivery date (14 Feb 2026 or Feb 20, 2026), Time (⏰ Time: 13:30-14:30)
+  - Recipient (👤 Recipient:), Phone (☎️ Phone: for recipient), Sender (👤 Sender:), Sender phone (☎️ after Sender)
+  - Address: multi-line until Google Maps; phone = Sender/customer phone (main contact)
+  - Item: "💐 Item: ❤️ RED ROSES BOUQUET — Size S" → bouquet_name, size; Bouquet: ฿1,310 → items_total
+  - Card message: may span lines with "quotes" (apostrophes like in "Je t'aime" are part of text)
+  - Price summary: Bouquet, Delivery fee, Total (handle commas in ฿1,310)
+  - Dates: normalize to YYYY-MM-DD (14 Feb 2026 or Feb 20, 2026)
+  - Districts: Nimman, Santitham, Suthep, Wualai, Jed Yod, Chang Khlan, Doi Saket, Hang Dong, Mae Rim, San Kamphaeng`;
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -222,6 +236,13 @@ function normalizeDate(val) {
   const monthNameMatch = s.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
   if (monthNameMatch) {
     const [, mon, d, y] = monthNameMatch;
+    const m = months[mon.toLowerCase().slice(0, 3)];
+    if (m) return `${y}-${m}-${d.padStart(2, '0')}`;
+  }
+  // Day first: 14 Feb 2026
+  const dayFirstMatch = s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+  if (dayFirstMatch) {
+    const [, d, mon, y] = dayFirstMatch;
     const m = months[mon.toLowerCase().slice(0, 3)];
     if (m) return `${y}-${m}-${d.padStart(2, '0')}`;
   }
